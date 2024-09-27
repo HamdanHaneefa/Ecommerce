@@ -1,0 +1,164 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-left">
+        <div class="col-12">
+            <div class="bg-light rounded h-100 p-4 large-box">
+                <div class="d-flex justify-content-between mb-4">
+                    <h6 class="text-center" style="font-weight: bold; color: black; font-size: 1.5rem;">Products</h6>
+                    <a href="/admin/addProducts" class="btn btn-primary btn-sm">Add Product</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="table" class="table table-bordered table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">Product Image</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Brand</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Variants</th>
+                                <th scope="col">Activation</th>
+                                <th scope="col">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (products && products.length > 0) { %>
+                                <% for (let i = 0; i < products.length; i++) { %>
+                                    <tr class="product-row" data-bs-toggle="modal" data-bs-target="#editProductModal<%= products[i]._id %>">
+                                        <td>
+                                            <% if (products[i].ProductImage) { %>
+                                                <img src="/uploads/product-images/<%= products[i].ProductImage %>" style="max-width: 80px; max-height: 80px; object-fit: cover;" />
+                                            <% } else { %>
+                                                <span class="text-danger" style="font-weight: bold;">Error: Product image has been deleted</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= products[i].productName %></td>
+                                        <td><%= products[i].brand %></td>
+                                        <td><%= products[i].type ? products[i].type : 'Not Specified' %></td>
+                                        <td>
+                                            <a href="/admin/product-varient/<%= products[i]._id %>" class="btn btn-secondary btn-sm">Variants</a>
+                                        </td>
+                                        
+                                        
+                                        <td>
+                                            <% if (products[i].isActive) { %>
+                                                <a href="/admin/blockProduct?id=<%= products[i]._id %>"><button class="btn btn-success btn-sm">Active</button></a>
+                                            <% } else { %>
+                                                <a href="/admin/unblockProduct?id=<%= products[i]._id %>"><button class="btn btn-danger btn-sm">Deactive</button></a>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <a href="/admin/deleteProduct/<%= products[i]._id %>" class="btn btn-sm delete-btn custom-delete-btn d-flex align-items-center justify-content-center" onclick="return confirm('Are you sure you want to delete this product?');">
+                                                <i class="bi bi-trash" style="margin-right: 5px;"></i> Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Edit Product Modal -->
+                                    <div class="modal fade" id="editProductModal<%= products[i]._id %>" tabindex="-1" aria-labelledby="editProductLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editProductLabel">Edit Product - <%= products[i].productName %></h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="/admin/updateProduct/<%= products[i]._id %>" method="POST">
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <label for="productName" class="form-label">Product Name</label>
+                                                                <input type="text" class="form-control" id="productName" name="productName" value="<%= products[i].productName %>" required>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label for="brand" class="form-label">Brand</label>
+                                                                <select class="form-control" id="brand" name="brand" required>
+                                                                    <option value="" disabled>Select a brand</option>
+                                                                    <% if (brand && brand.length > 0) { %>
+                                                                        <% for (let j = 0; j < brand.length; j++) { %>
+                                                                            <option value="<%= brand[j].name %>" <%= brand[j].name === products[i].brand ? 'selected' : '' %>><%= brand[j].name %></option>
+                                                                        <% } %>
+                                                                    <% } else { %>
+                                                                        <option value="" disabled>No brands available</option>
+                                                                    <% } %>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label for="type" class="form-label">Type</label>
+                                                                <select class="form-control" id="type" name="type" required>
+                                                                    <option value="" disabled>Select Type</option>
+                                                                    <option value="in-ear" <%= products[i].type === 'in-ear' ? 'selected' : '' %>>In-ear</option>
+                                                                    <option value="over-ear" <%= products[i].type === 'over-ear' ? 'selected' : '' %>>Over-ear</option>
+                                                                    <option value="on-ear" <%= products[i].type === 'on-ear' ? 'selected' : '' %>>On-ear</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label for="connectionType" class="form-label">Connection Type</label>
+                                                                <select class="form-control" id="connectionType" name="connectionType" required>
+                                                                    <option value="" disabled>Select Connection Type</option>
+                                                                    <option value="wireless" <%= products[i].connectionType === 'wireless' ? 'selected' : '' %>>Wireless</option>
+                                                                    <option value="true-wireless" <%= products[i].connectionType === 'true-wireless' ? 'selected' : '' %>>True Wireless</option>
+                                                                    <option value="wired" <%= products[i].connectionType === 'wired' ? 'selected' : '' %>>Wired</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-12 mb-3">
+                                                                <label for="description" class="form-label">Description</label>
+                                                                <textarea class="form-control" id="description" name="description" required><%= products[i].description %></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary">Update</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="7" class="text-center">No products found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery (required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+<!-- Bootstrap JS (for modal functionality) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- DataTable Initialization Script -->
+<script>
+    $(document).ready(function () {
+        $('#table').DataTable({
+            "paging": true,
+            "searching": true,
+            "ordering": true,
+            "info": false,
+            "lengthMenu": [5, 10, 25, 50],
+            "pageLength": 5,
+            "lengthChange": false,
+            "columnDefs": [
+                { "orderable": false, "targets": [0, 4, 5, 6] }
+            ],
+            "pagingType": "simple",
+            "language": {
+                "search": "Filter records:",
+                "paginate": {
+                    "next": "Next",
+                    "previous": "Previous"
+                }
+            }
+        });
+    });
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

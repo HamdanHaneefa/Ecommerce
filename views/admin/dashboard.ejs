@@ -1,0 +1,90 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container-fluid">
+  <div class="row">
+
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Dashboard</h1>
+      </div>
+
+      <!-- Cards for quick stats -->
+      <div class="row">
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+              Users
+              <div class="mt-2">500</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card bg-success text-white shadow">
+            <div class="card-body">
+              Active Users
+              <div class="mt-2">320</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card bg-warning text-white shadow">
+            <div class="card-body">
+              Pending Requests
+              <div class="mt-2">12</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="card bg-danger text-white shadow">
+            <div class="card-body">
+              Issues Reported
+              <div class="mt-2">5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table for latest user activity -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-table me-1"></i>
+          Latest User Activity
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>John Doe</td>
+                <td>Logged in</td>
+                <td>2024-09-13</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Jane Smith</td>
+                <td>Updated Profile</td>
+                <td>2024-09-12</td>
+              </tr>
+              <!-- Add more dummy rows here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include("../../views/partials/admin/footer") %>

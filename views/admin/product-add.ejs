@@ -1,0 +1,158 @@
+<%- include("../../views/partials/admin/header") %>
+
+<!-- Include Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="bg-light rounded h-100 p-5 shadow">
+                <h2 class="text-center mb-4" style="font-weight: bold;">Add Product</h2>
+
+                <form action="/admin/addProducts" method="POST" enctype="multipart/form-data" id="productForm">
+                    <!-- Product Basics -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="name">Product Name</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Enter product name" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="brand">Brand Name</label>
+                                <select class="form-control" id="brand" name="brand" required>
+                                    <option value="" disabled selected>Select a brand</option>
+                                    <% if (brand && brand.length > 0) { %>
+                                        <% for (let i = 0; i < brand.length; i++) { %>
+                                            <option value="<%= brand[i].name %>"><%= brand[i].name %></option>
+                                        <% } %>
+                                    <% } else { %>
+                                        <option value="" disabled>No brands available</option>
+                                    <% } %>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="type">Type</label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="" disabled selected>Select Type</option>
+                                    <option value="in-ear">In-ear</option>
+                                    <option value="over-ear">Over-ear</option>
+                                    <option value="on-ear">On-ear</option>
+                                </select>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="connectionType">Connection Type</label>
+                                <select class="form-select" id="connectionType" name="connectionType" required>
+                                    <option value="" disabled selected>Select Connection Type</option>
+                                    <option value="wireless">Wireless</option>
+                                    <option value="true-wireless">True Wireless</option>
+                                    <option value="wired">Wired</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Description -->
+                    <div class="form-group mb-4">
+                        <label for="description">Product Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter product description" required></textarea>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="form-group mb-4">
+                        <label for="image">Product Image</label>
+                        <input type="file" class="form-control" id="imageInput" name="image" accept="image/*" >
+                        <div class="img-preview mt-3" style="display: none; width: 100%; height: 300px; overflow: hidden;"></div>
+                        <button type="button" id="previewCrop" class="btn btn-info mt-3" style="display: none;">Preview Cropped Image</button>
+                    </div>
+
+                    <% if (typeof error_msg !== 'undefined') { %>
+                        <div class="alert alert-danger"><%= error_msg %></div>
+                    <% } %>
+
+                    <!-- Cropped Image Preview -->
+                    <div class="cropped-preview mt-4" style="display: none;">
+                        <h5>Cropped Image Preview:</h5>
+                        <img id="croppedImage" src="" alt="Cropped Image" style="width: 200px; height: 200px; object-fit: cover;">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-success">Confirm</button>
+                        <a href="/admin/product" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+<!-- Include Cropper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script>
+    let cropper;
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.querySelector('.img-preview');
+    const previewButton = document.getElementById('previewCrop');
+    const croppedPreviewContainer = document.querySelector('.cropped-preview');
+    const croppedImageElement = document.getElementById('croppedImage');
+    const form = document.getElementById('productForm');
+
+    imageInput.addEventListener('change', function (e) {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const imgURL = event.target.result;
+                previewContainer.style.display = 'block';
+                previewButton.style.display = 'block';
+
+                const img = document.createElement('img');
+                img.src = imgURL;
+                previewContainer.innerHTML = '';
+                previewContainer.appendChild(img);
+
+                // Initialize Cropper.js
+                cropper = new Cropper(img, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Show cropped image directly in form
+    previewButton.addEventListener('click', function () {
+        if (cropper) {
+            cropper.getCroppedCanvas().toBlob(function (blob) {
+                const croppedImageUrl = URL.createObjectURL(blob);
+                croppedImageElement.src = croppedImageUrl;
+                croppedPreviewContainer.style.display = 'block';
+
+                // Replace the file input with the cropped image
+                const file = new File([blob], 'cropped-image.png', { type: 'image/png' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                imageInput.files = dataTransfer.files;
+
+                // Hide the cropper
+                previewContainer.style.display = 'none';
+                previewButton.style.display = 'none'; // Hide the preview button
+            });
+        }
+    });
+
+    // Form submission with validation
+    form.addEventListener('submit', function (e) {
+        if (!imageInput.files.length) {
+            e.preventDefault();
+            alert('Please select and crop an image before submitting.');
+        }
+    });
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

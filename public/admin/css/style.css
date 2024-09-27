@@ -1,0 +1,587 @@
+/********** Template CSS **********/
+:root {
+    --primary: #009CFF;
+    --light: #F3F6F9;
+    --dark: #191C24;
+}
+
+.back-to-top {
+    position: fixed;
+    display: none;
+    right: 45px;
+    bottom: 45px;
+    z-index: 99;
+}
+
+
+/*** Spinner ***/
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
+
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/*** Button ***/
+.btn {
+    transition: .5s;
+}
+
+.btn.btn-primary {
+    color: #FFFFFF;
+}
+
+.btn-square {
+    width: 38px;
+    height: 38px;
+}
+
+.btn-sm-square {
+    width: 32px;
+    height: 32px;
+}
+
+.btn-lg-square {
+    width: 48px;
+    height: 48px;
+}
+
+.btn-square,
+.btn-sm-square,
+.btn-lg-square {
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    border-radius: 50px;
+}
+
+
+/*** Layout ***/
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--light);
+    transition: 0.5s;
+    z-index: 999;
+}
+
+.content {
+    margin-left: 250px;
+    min-height: 100vh;
+    background: #FFFFFF;
+    transition: 0.5s;
+}
+
+@media (min-width: 992px) {
+    .sidebar {
+        margin-left: 0;
+    }
+
+    .sidebar.open {
+        margin-left: -250px;
+    }
+
+    .content {
+        width: calc(100% - 250px);
+    }
+
+    .content.open {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .sidebar {
+        margin-left: -250px;
+    }
+
+    .sidebar.open {
+        margin-left: 0;
+    }
+
+    .content {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+
+/*** Navbar ***/
+.sidebar .navbar .navbar-nav .nav-link {
+    padding: 7px 20px;
+    color: var(--dark);
+    font-weight: 500;
+    border-left: 3px solid var(--light);
+    border-radius: 0 30px 30px 0;
+    outline: none;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover,
+.sidebar .navbar .navbar-nav .nav-link.active {
+    color: var(--primary);
+    background: #FFFFFF;
+    border-color: var(--primary);
+}
+
+.sidebar .navbar .navbar-nav .nav-link i {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFF;
+    border-radius: 40px;
+}
+
+.sidebar .navbar .navbar-nav .nav-link:hover i,
+.sidebar .navbar .navbar-nav .nav-link.active i {
+    background: var(--light);
+}
+
+.sidebar .navbar .dropdown-toggle::after {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    transition: .5s;
+}
+
+.sidebar .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+.sidebar .navbar .dropdown-item {
+    padding-left: 25px;
+    border-radius: 0 30px 30px 0;
+}
+
+.content .navbar .navbar-nav .nav-link {
+    margin-left: 25px;
+    padding: 12px 0;
+    color: var(--dark);
+    outline: none;
+}
+
+.content .navbar .navbar-nav .nav-link:hover,
+.content .navbar .navbar-nav .nav-link.active {
+    color: var(--primary);
+}
+
+.content .navbar .sidebar-toggler,
+.content .navbar .navbar-nav .nav-link i {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFF;
+    border-radius: 40px;
+}
+
+.content .navbar .dropdown-toggle::after {
+    margin-left: 6px;
+    vertical-align: middle;
+    border: none;
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    transition: .5s;
+}
+
+.content .navbar .dropdown-toggle[aria-expanded=true]::after {
+    transform: rotate(-180deg);
+}
+
+@media (max-width: 575.98px) {
+    .content .navbar .navbar-nav .nav-link {
+        margin-left: 15px;
+    }
+}
+
+
+/*** Date Picker ***/
+.bootstrap-datetimepicker-widget.bottom {
+    top: auto !important;
+}
+
+.bootstrap-datetimepicker-widget .table * {
+    border-bottom-width: 0px;
+}
+
+.bootstrap-datetimepicker-widget .table th {
+    font-weight: 500;
+}
+
+.bootstrap-datetimepicker-widget.dropdown-menu {
+    padding: 10px;
+    border-radius: 2px;
+}
+
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+    background: var(--primary);
+}
+
+.bootstrap-datetimepicker-widget table td.today::before {
+    border-bottom-color: var(--primary);
+}
+
+
+/*** Testimonial ***/
+.progress .progress-bar {
+    width: 0px;
+    transition: 2s;
+}
+
+
+/*** Testimonial ***/
+.testimonial-carousel .owl-dots {
+    margin-top: 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.testimonial-carousel .owl-dot {
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    width: 15px;
+    height: 15px;
+    border: 5px solid var(--primary);
+    border-radius: 15px;
+    transition: .5s;
+}
+
+.testimonial-carousel .owl-dot.active {
+    background: var(--dark);
+    border-color: var(--primary);
+}
+
+
+
+
+/* Increase container and item sizes */
+.large-box {
+    font-size: 1.2rem; /* Increase font size for better readability */
+    padding: 2rem; /* Increase padding inside the box */
+}
+
+.table th, .table td {
+    padding: 1rem; /* Increase padding for more space */
+}
+
+/* Responsive Table Layout */
+@media (max-width: 992px) {
+    .table th, .table td {
+        padding: 0.75rem; /* Adjust padding for medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .table thead {
+        display: none; /* Hide table header on small screens */
+    }
+
+    .table, .table tbody, .table tr, .table td {
+        display: block; /* Make table rows block elements */
+        width: 100%;
+        margin-bottom: 1rem; /* Add space between rows */
+    }
+
+    .table td {
+        text-align: right; /* Align text to the right */
+        position: relative;
+        padding-left: 50%; /* Add space for labels */
+        border: none; /* Remove borders */
+    }
+
+    .table td::before {
+        content: attr(data-label); /* Add labels for each cell */
+        position: absolute;
+        left: 0;
+        width: 45%;
+        padding-right: 1rem;
+        white-space: nowrap;
+        font-weight: bold;
+        text-align: left;
+        background: #f8f9fa; /* Background color for labels */
+    }
+}
+
+.btn-group {
+    display: flex;
+    gap: 0.5rem; /* Add gap between buttons */
+}
+
+.scale-on-hover {
+    transition: transform 0.2s ease-in-out;
+}
+
+
+
+
+/* Remove shadow and outline on button click */
+.btn-outline-danger:focus,
+.btn-outline-success:focus {
+    box-shadow: none; /* Remove shadow */
+    outline: none; /* Remove focus outline */
+}
+
+/* Remove shadow effect on hover as well */
+.btn-outline-danger:hover,
+.btn-outline-success:hover {
+    box-shadow: none; /* Remove shadow on hover */
+}
+
+/* Optional: Ensure there is no border color change on focus */
+.btn-outline-danger:focus,
+.btn-outline-success:focus {
+    border-color: inherit; /* Maintain the current border color */
+}
+
+/* Optional: Add transition for smoother button interaction */
+.btn-outline-danger,
+.btn-outline-success {
+    transition: all 0.3s ease; /* Smooth transition effect */
+}
+
+
+
+
+/* Increase container and item sizes */
+.large-box {
+    font-size: 1.2rem; /* Increase font size for better readability */
+    padding: 2rem; /* Increase padding inside the box */
+}
+
+/* Table padding */
+.table th, .table td {
+    padding: 1rem; /* Increase padding for more space */
+}
+
+/* Responsive Table Layout */
+@media (max-width: 992px) {
+    .table th, .table td {
+        padding: 0.75rem; /* Adjust padding for medium screens */
+    }
+}
+
+@media (max-width: 768px) {
+    .table {
+        width: 100%; /* Ensure the table takes full width */
+        border-collapse: collapse; /* Ensure no extra space between cells */
+    }
+
+    .table thead {
+        display: none; /* Hide table header on small screens */
+    }
+
+    .table tbody, .table tr {
+        display: block; /* Make table rows block elements */
+        width: 100%;
+        margin-bottom: 1rem; /* Add space between rows */
+    }
+
+    .table td {
+        display: block; /* Make table cells block elements */
+        width: 100%;
+        position: relative;
+        padding: 0.5rem 1rem; /* Add padding for better readability */
+        border: 1px solid #dee2e6; /* Add borders to table cells for separation */
+        box-sizing: border-box; /* Include border in the element's total width and height */
+        text-align: left; /* Align text to the left */
+    }
+
+    .table td::before {
+        content: attr(data-label); /* Add labels for each cell */
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 30%; /* Adjust width to fit well */
+        padding: 0.5rem; /* Add padding for labels */
+        white-space: nowrap;
+        font-weight: bold;
+        text-align: left;
+        background: #f8f9fa; /* Background color for labels */
+        border-right: 1px solid #dee2e6; /* Border to separate label from content */
+        box-sizing: border-box; /* Include border in the element's total width and height */
+    }
+
+    .table td {
+        padding-left: 40%; /* Adjust to ensure content starts after label */
+    }
+}
+
+
+
+
+  /* Hide the default DataTables search box */
+  #table_filter {
+    display: none;
+}
+
+
+
+    /* Style the pagination container */
+    .dataTables_paginate {
+        display: flex;
+        justify-content: center; /* Center the pagination controls */
+        margin-top: 20px; /* Add some margin at the top */
+    }
+
+    /* Style pagination buttons */
+    .dataTables_paginate .paginate_button {
+        margin: 0 5px; /* Add horizontal gap between buttons */
+        padding: 5px 10px; /* Adjust padding for buttons */
+        border: 1px solid #ccc; /* Add border for buttons */
+        border-radius: 4px; /* Round corners */
+        background-color: #f8f9fa; /* Background color for buttons */
+        color: #333; /* Text color */
+        cursor: pointer; /* Pointer cursor on hover */
+    }
+
+    /* Style active pagination button */
+    .dataTables_paginate .paginate_button.current {
+        background-color: #007bff; /* Background color for the active button */
+        color: #fff; /* Text color for the active button */
+        border: 1px solid #007bff; /* Border color for the active button */
+    }
+
+    /* Style pagination button on hover */
+    .dataTables_paginate .paginate_button:hover {
+        background-color: #e2e6ea; /* Background color on hover */
+        border-color: #adb5bd; /* Border color on hover */
+    }
+
+
+
+
+/* Button group container */
+.btn-group {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+}
+
+/* Common button styles */
+.btn {
+    border: 2px solid transparent; /* Transparent border to handle hover effects */
+    border-radius: 4px; /* Rounded corners */
+    padding: 8px 16px; /* Padding inside the button */
+    font-size: 14px; /* Font size */
+    font-weight: bold; /* Font weight */
+    text-transform: uppercase; /* Uppercase text */
+    transition: all 0.3s ease; /* Smooth transition for all effects */
+    cursor: pointer; /* Pointer cursor on hover */
+    outline: none; /* Remove outline */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Align with other inline elements */
+    text-align: center; /* Center text inside the button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Default shadow */
+}
+
+/* Button styles for the "Deactivate" button */
+.btn-outline-danger {
+    background-color: #dc3545; /* Red background */
+    border-color: #dc3545; /* Red border */
+}
+
+/* Button styles for the "Activate" button with light green */
+.btn-outline-success {
+    background-color: #00c950; /* Light green background */
+    border-color: #00c950; /* Light green border */
+}
+
+/* Style for the <a> tag inside buttons */
+.btn a {
+    color: #fff; /* White text color */
+    text-decoration: none; /* Remove underline */
+}
+
+/* Hover effect for <a> tag inside buttons */
+.btn:hover a {
+    color: #000; /* Black text color on hover */
+}
+
+/* Hover effect for buttons */
+.btn:hover {
+    background-color: #fff; /* White background on hover */
+    border-color: #000; /* Black border on hover */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6); /* Glow effect on hover */
+    transform: scale(1.05); /* Slightly scale up the button */
+}
+
+/* Animation effect when clicking the button */
+.btn:active {
+    transform: scale(0.98); /* Slightly scale down the button when pressed */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Reduced shadow when clicked */
+}
+
+/* Specific animation class if you want extra effects */
+.scale-on-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for scaling and shadow */
+}
+
+.scale-on-hover:hover {
+    transform: scale(1.1); /* Scale up slightly on hover */
+}
+
+/* Delete button in category  */
+.custom-delete-btn {
+    color: #dc3545; /* Keep the red outline color */
+    border-color: #dc3545; /* Maintain the border color */
+}
+
+.custom-delete-btn .delete-icon {
+    margin-right: 0.5rem; /* Add spacing between icon and text */
+}
+
+/* Ensure the icon color is set correctly */
+.custom-delete-btn i {
+    color: inherit; /* Use the button's text color */
+}
+
+
+
+/* Error/Danger Alert */
+.alert-danger {
+  padding-top: 10px;
+  color: #dc3545; /* Red color */
+  font-weight: bold;
+  opacity: 1;
+  transition: opacity 1s ease-out; /* Smooth fading */
+}
+
+/* Success Alert */
+.alert-success {
+  padding-top: 10px;
+  color: #28a745; /* Green color */
+  font-weight: bold;
+  opacity: 1;
+  transition: opacity 1s ease-out; /* Smooth fading */
+}
+
+/* Fade-out class */
+.fade-out {
+  opacity: 0;
+}
+
+

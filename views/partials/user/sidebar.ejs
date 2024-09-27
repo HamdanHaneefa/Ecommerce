@@ -1,0 +1,53 @@
+<!-- sidebar.ejs -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" /> <!-- Include Font Awesome for icons -->
+<style>
+    .sidebar-container {
+        transition: background-color 0.3s ease;
+    }
+    .list-group-item {
+        position: relative;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .list-group-item:hover {
+        background-color: #e0f7fa; /* Light blue on hover */
+        color: #007bff; /* Blue text on hover */
+    }
+    .list-group-item.active {
+        background-color: #007bff; /* Blue background for active link */
+        color: white; /* White text for active link */
+    }
+    .list-group-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px; /* Indicator width */
+       
+        border-radius: 4px 0 0 4px; /* Rounded corners */
+    }
+</style>
+
+<div class="col-md-3 sidebar-container bg-light">
+    <div class="list-group">
+        <a href="/profile" class="list-group-item list-group-item-action <%= url === '/profile' ? 'active' : '' %>">
+            <i class="fas fa-user"></i> Profile
+        </a>
+        <a href="/address" class="list-group-item list-group-item-action <%= url === '/address' ? 'active' : '' %>">
+            <i class="fas fa-map-marker-alt"></i> Address
+        </a>
+        <a href="/orders" class="list-group-item list-group-item-action <%= url === '/orders' ? 'active' : '' %>">
+            <i class="fas fa-shopping-cart"></i> Orders
+        </a>
+        <a href="/coupons" class="list-group-item list-group-item-action <%= url === '/coupons' ? 'active' : '' %>">
+            <i class="fas fa-tags"></i> Coupons
+        </a>
+        <a href="/wallet" class="list-group-item list-group-item-action <%= url === '/wallet' ? 'active' : '' %>">
+            <i class="fas fa-wallet"></i> Wallet
+        </a>
+        <a href="/logout" class="list-group-item list-group-item-action <%= url === '/logout' ? 'active' : '' %>">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+</div>
+

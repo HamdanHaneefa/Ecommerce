@@ -1,0 +1,229 @@
+
+    /* General Body Styling */
+body {
+  background: linear-gradient(45deg, #BCDBF0, #e0eafc);
+  background-size: 400% 400%;
+  animation: gradientAnimation 15s ease infinite;
+  color: #fff;
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* Container Styling */
+.container {
+  width: 90%;
+  max-width: 450px;
+  padding: 20px;
+  background-color: #333;
+  border-radius: 15px;
+  border: 2px solid #225566;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(50px);
+  animation: slideUp 1s ease forwards, zoomIn 1s ease forwards;
+  margin: 0 auto; /* Centering container horizontally */
+}
+
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Headings and Links */
+h1 {
+  margin-bottom: 10px;
+}
+
+.signup-link {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.signup-link a {
+  color: #225566; /* Change color to white */
+  text-decoration: none; /* Remove underline */
+}
+
+.signup-link a:hover {
+  color: #ccc; /* Slight color change on hover for better visibility */
+}
+
+/* Form Group Styling */
+.form-group {
+  margin-bottom: 20px;
+  text-align: center; /* Center-align the label and input */
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  max-width: 400px; /* Adjust width for better alignment */
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #444;
+  color: #fff;
+  font-size: 16px;
+  margin: 0 auto; /* Center input within the form group */
+  display: block;
+}
+
+/* Button Styling */
+.button-group {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.button-group button {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background-color: #225566;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.button-group button:hover {
+  background-color: #1a3a5b;
+  transform: scale(1.05);
+}
+
+/* Google Login Button */
+#google-auth {
+  text-decoration: none; /* Remove underline from the Google login link */
+}
+
+.signup-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1a73e8;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+/* Forgot Password Link Styling */
+.forgot-password {
+  margin-top: 5px;
+}
+
+.forgot-password a {
+  color: #225566; /* Link color */
+  text-decoration: none; /* Remove underline */
+  font-size: 16px; /* Adjust font size */
+  font-weight: bold; /* Make font bold */
+  display: inline-block; /* Ensure padding and margin work as expected */
+
+  border-radius: 10px; /* Add border radius for rounded corners */
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+}
+
+.forgot-password a:hover {
+  color: #fff; /* Change text color on hover */
+  background-color: #333; /* Add background color on hover */
+  transform: scale(1.05); /* Slightly scale up the link on hover */
+  text-decoration: none; /* Ensure no underline on hover */
+}
+
+.signup-google img {
+  width: 20px;
+  margin-right: 10px;
+}
+
+.signup-google:hover {
+  background-color: #1669c7;
+  transform: scale(1.05);
+}
+
+/* Terms Styling */
+.terms {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 12px;
+}
+
+.terms a {
+  color: #fff; /* Change color to white */
+  text-decoration: none; /* Remove underline */
+}
+
+.terms a:hover {
+  text-decoration: underline; /* Underline on hover for visibility */
+}
+
+/* Media Query for Smaller Screens */
+@media (max-width: 768px) {
+  .form-group input {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+
+/* Error/Danger Alert */
+.alert-danger {
+  padding-top: 10px;
+  color: #dc3545; /* Red color */
+  font-weight: bold;
+  opacity: 1;
+  transition: opacity 1s ease-out; /* Smooth fading */
+}
+
+/* Success Alert */
+.alert-success {
+  padding-top: 10px;
+  color: #28a745; /* Green color */
+  font-weight: bold;
+  opacity: 1;
+  transition: opacity 1s ease-out; /* Smooth fading */
+}
+
+/* Fade-out class */
+.fade-out {
+  opacity: 0;
+}

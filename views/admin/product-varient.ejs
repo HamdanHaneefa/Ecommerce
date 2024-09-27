@@ -1,0 +1,133 @@
+<%- include("../../views/partials/admin/header") %>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Product Image Section -->
+        <div class="col-lg-6 col-md-12 d-flex justify-content-center align-items-center">
+            <div class="product-image-container mb-4" style="max-width: 400px;">
+                <img src="/uploads/product-images/<%= product.ProductImage %>" alt="product-image" style="width: 100%; border-radius: 10px; object-fit: cover; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);" />
+            </div>
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="col-lg-6 col-md-12">
+            <h2 class="mb-3" style="font-weight: bold; color: #333; font-size: 1.8rem;"><%= product.productName %></h2>
+            <ul class="list-unstyled" style="font-size: 1.1rem; line-height: 2; color: #555;">
+                <li><strong>Name:</strong> <%= product.productName %></li>
+                <li><strong>Type:</strong> <%= product.type %></li>
+                <li><strong>Brand:</strong> <%= product.brand %></li>
+                <li><strong>Connection Type:</strong> <%= product.connectionType %></li>
+                <li><strong>Description:</strong> <%= product.description %></li>
+                <li><strong>Created At:</strong> <%= product.createdAt.toLocaleString() %></li>
+                <li><strong>Updated At:</strong> <%= product.updatedAt.toLocaleString() %></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Variant Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4" style="color: #333; font-weight: bold;">Variants</h2>
+
+            <!-- Add New Variant Button -->
+            <div class="text-end mb-3">
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addVariantModal">+ Add Variant</button>
+            </div>
+
+            <!-- Variant Table -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="text-center">IMAGE</th>
+                            <th scope="col">COLOR</th>
+                            <th scope="col">PRICE</th>
+                            <th scope="col">STOCKS</th>
+                            <th scope="col">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (variants && variants.length > 0) { %>
+                            <% variants.forEach(variant => { %>
+                                <tr>
+                                    <td class="text-center">
+                                        <img src="/uploads/variant-images/<%= variant.image %>" alt="variant-image" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);" />
+                                    </td>
+                                    <td><%= variant.color %></td>
+                                    <td>$<%= variant.price.toFixed(2) %></td>
+                                    <td><%= variant.stocks %></td>
+                                    <td class="text-center">
+                                        <a href="/admin/changeVariantStatus/<%= variant._id %>" class="btn btn-sm btn-danger">Change Status</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center">No variants found.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Button -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="/admin/product" class="btn btn-secondary btn-lg">Return to Product Page</a>
+        </div>
+    </div>
+</div>
+
+<!-- Add Variant Modal -->
+<div class="modal fade" id="addVariantModal" tabindex="-1" aria-labelledby="addVariantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addVariantModalLabel">Add Variant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addVariantForm" enctype="multipart/form-data">
+                    <!-- Color -->
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <input type="text" class="form-control" id="color" name="color" required>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" class="form-control" id="price" name="price" required>
+                    </div>
+
+                    <!-- Stock -->
+                    <div class="mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="stock" name="stock" required>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-3">
+                        <label for="variantImages" class="form-label">Upload Images</label>
+                        <input type="file" class="form-control" id="variantImages" name="variantImages" accept="image/*" multiple required>
+                        <small class="text-muted">You can upload multiple images. Each will be cropped.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" id="saveVariantButton">Save Variant</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts for Image Cropping -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet" />
+
+
+
+<%- include("../../views/partials/admin/footer") %>

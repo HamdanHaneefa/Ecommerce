@@ -1,0 +1,86 @@
+<%- include("../../views/partials/user/header") %>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- Sidebar-Container  -->
+        <%- include("../../views/partials/user/sidebar") %>
+        <!-- Closing-Sidebar -->
+
+        <div class="col-md-4 offset-md-1 mt-4"> <!-- Decreased column width -->
+            <h2 class="address-page-title">Add Address</h2> <!-- Updated class for styling -->
+
+            
+              <!-- Error Message Container -->
+              <% if (err_msg && err_msg.length > 0) { %> 
+                <div class="alert alert-custom-danger">
+                    <strong>Error:</strong> <%= err_msg[0] %>
+                    <button type="button" class="close" onclick="this.parentElement.style.display='none';">
+                        &times;
+                    </button>
+                </div> 
+            <% } %>
+
+            <form action="/address/add-address" method="POST" class="address-form-container">
+                <div class="form-row"> <!-- Use form-row for horizontal alignment -->
+                    <!-- Name Field -->
+                    <div class="form-group col-md-6">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div class="form-group col-md-6">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="phone" name="phone" required>
+                    </div>
+                </div>
+
+                <div class="form-row"> 
+                    <!-- Street Address Field -->
+                    <div class="form-group col-md-12">
+                        <label for="street" class="form-label">Street Address</label>
+                        <input type="text" class="form-control" id="street" name="street" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- City Field -->
+                    <div class="form-group col-md-4">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="city" name="city" required>
+                    </div>
+
+                    <!-- State Field -->
+                    <div class="form-group col-md-4">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" class="form-control" id="state" name="state" required>
+                    </div>
+
+                    <!-- Zip Code Field -->
+                    <div class="form-group col-md-4">
+                        <label for="zip" class="form-label">Zip Code</label>
+                        <input type="text" class="form-control" id="zip" name="zip" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Country Field -->
+                    <div class="form-group col-md-12">
+                        <label for="country" class="form-label">Country</label>
+                        <input type="text" class="form-control" id="country" name="country" required>
+                    </div>
+                </div>
+
+                <!-- Button Container -->
+                <div class="button-container d-flex flex-column flex-md-row justify-content-between mt-3"> <!-- Adjusted mt-3 for better positioning -->
+                    <div class="d-flex mb-2 mb-md-0"> <!-- Added margin for better spacing on mobile -->
+                        <button type="reset" class="btn btn-outline-dark mr-2 custom-btn">Discard Changes</button>
+                        <button type="submit" class="btn btn-info mr-2 custom-btn">Save Changes</button>
+                    </div>
+                    <a href="/address" class="btn btn-secondary custom-btn">Back to Address</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
