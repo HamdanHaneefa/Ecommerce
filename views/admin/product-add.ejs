@@ -52,37 +52,53 @@
                             </div>
                         </div>
                     </div>
-
+                
+                    <!-- Product Price and Stock -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="price">Product Price (₹)</label>
+                                <input type="number" class="form-control" id="price" name="price" placeholder="Enter product price" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label for="stock">Stock</label>
+                                <input type="number" class="form-control" id="stock" name="stock" placeholder="Enter stock quantity" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+                
                     <!-- Product Description -->
                     <div class="form-group mb-4">
                         <label for="description">Product Description</label>
                         <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter product description" required></textarea>
                     </div>
-
+                
                     <!-- Image Upload -->
                     <div class="form-group mb-4">
                         <label for="image">Product Image</label>
-                        <input type="file" class="form-control" id="imageInput" name="image" accept="image/*" >
+                        <input type="file" class="form-control" id="imageInput" name="image" accept="image/*">
                         <div class="img-preview mt-3" style="display: none; width: 100%; height: 300px; overflow: hidden;"></div>
                         <button type="button" id="previewCrop" class="btn btn-info mt-3" style="display: none;">Preview Cropped Image</button>
                     </div>
-
+                
                     <% if (typeof error_msg !== 'undefined') { %>
                         <div class="alert alert-danger"><%= error_msg %></div>
                     <% } %>
-
+                
                     <!-- Cropped Image Preview -->
                     <div class="cropped-preview mt-4" style="display: none;">
                         <h5>Cropped Image Preview:</h5>
                         <img id="croppedImage" src="" alt="Cropped Image" style="width: 200px; height: 200px; object-fit: cover;">
                     </div>
-
+                
                     <!-- Action Buttons -->
                     <div class="d-flex justify-content-between mt-4">
                         <button type="submit" class="btn btn-success">Confirm</button>
                         <a href="/admin/product" class="btn btn-secondary">Cancel</a>
                     </div>
-                </form>
+                </form>                
             </div>
         </div>
     </div>

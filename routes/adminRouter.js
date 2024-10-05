@@ -47,9 +47,12 @@ router.post('/updateProduct/:id',adminAuth,productController.productUpdate)
 
 
 //PRODUCT VARIENT
-router.get('/product-varient/:id', adminAuth, productController.loadVarient);
-router.post('/addVariant',adminAuth ,upload.array('croppedImage'), productController.addVarient);
-
+router.get('/product-varient/:id', adminAuth, productController.loadVariant);
+router.post('/product-varient/:id',adminAuth,upload.array('variantImages'),productController.addVarient);
+router.get('/blockVariant/:id', adminAuth, productController.blockVariant);
+router.get('/unblockVariant/:id', adminAuth, productController.unblockVariant);
+router.get('/deleteVariant/:id',adminAuth,productController.deleteVariant)
+router.post('/updateVariant',adminAuth,productController.editVariant)
 
 
 

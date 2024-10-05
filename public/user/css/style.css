@@ -8747,20 +8747,20 @@ h1, h2, h3, h4, h5,
   .btn:hover, .btn:active, .btn:focus {
     outline: none; }
   .btn.btn-primary {
-    background: #dbcc8f;
-    border: 1px solid #dbcc8f;
+    background: #225566;
+    border: 1px solid black;
     color: #fff; }
     .btn.btn-primary:hover {
-      border: 1px solid #dbcc8f;
-      background: transparent;
+      border: 1px solid #225566;
+      background: #225566;
       color: #dbcc8f; }
     .btn.btn-primary.btn-outline-primary {
       border: 1px solid #dbcc8f;
-      background: transparent;
+      background: #225566;
       color: #dbcc8f; }
       .btn.btn-primary.btn-outline-primary:hover {
         border: 1px solid transparent;
-        background: #dbcc8f;
+        background: #225566;
         color: #fff; }
   .btn.btn-white {
     background: #fff;
@@ -9284,7 +9284,7 @@ h1, h2, h3, h4, h5,
   .table th {
     font-weight: 500; }
   .table .thead-primary {
-    background: #dbcc8f; }
+    background: #262e32; }
     .table .thead-primary tr th {
       padding: 20px 10px;
       color: #fff !important;
@@ -9296,16 +9296,16 @@ h1, h2, h3, h4, h5,
     border: 1px solid transparent !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important; }
     .table tbody tr td.product-remove a {
-      background: #dbcc8f;
+      background: #262e32;
       padding: 4px 10px;
-      color: #000000;
+      color: white;
       -webkit-border-radius: 2px;
       -moz-border-radius: 2px;
       -ms-border-radius: 2px;
       border-radius: 2px; }
       .table tbody tr td.product-remove a:hover {
         border: 1px solid #dbcc8f;
-        background: #dbcc8f; }
+        background: #225566; }
         .table tbody tr td.product-remove a:hover span {
           color: #fff; }
     .table tbody tr td.quantity {
@@ -9386,16 +9386,16 @@ h1, h2, h3, h4, h5,
     appearance: none; }
 
 .billing-form .form-control {
-  font-weight: 300;
+  font-weight: 700;
   border: transparent !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  height: 58px !important;
+  height: 69px !important;
   padding-left: 15px;
   padding-right: 15px;
   background: transparent !important;
-  color: rgba(0, 0, 0, 0.4) !important;
-  font-size: 14px;
-  border-radius: 0px;
+  color: #474747 !important;
+  font-size: 16px;
+  border-radius: 18px;
   -webkit-box-shadow: none !important;
   box-shadow: none !important; }
   .billing-form .form-control::-webkit-input-placeholder {
@@ -10468,7 +10468,7 @@ textarea.form-control {
   font-size: 12px;
   text-transform: uppercase;
   background: transparent;
-  color: #dbcc8f;
+  color: #225566;
   position: relative;
   -webkit-box-shadow: none !important;
   -moz-box-shadow: none !important;
@@ -11267,3 +11267,214 @@ textarea.form-control {
        background-color: #dc3545 !important; /* Custom background color for error */
        color: white !important; /* Custom text color */
    }
+
+
+
+
+
+
+   /* CART QUANTITY BUTTON  */
+
+   
+    /* Style for the buttons */
+.input-group-btn button {
+  background-color: #4B8A95; /* Initial color for all buttons */
+  border: 2px solid #D9A29D;
+  color: white;
+  font-size: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.5s ease; /* Smooth color change */
+}
+
+/* Style for the plus button */
+.input-group-btn .quantity-right-plus {
+  background-color: #6BB5BE; /* Different color for the plus button */
+  font-weight: bold; /* Make the plus button bold */
+}
+
+/* Style for the minus button */
+.input-group-btn .quantity-left-minus {
+  background-color: #6BB5BE; /* Same color for the minus button */
+  font-weight: bold; /* Make the minus button bold */
+}
+
+/* Hover effect to darken colors */
+.input-group-btn button:hover {
+  background-color: #325F68; /* Darker color on hover */
+}
+
+/* Style for the input field */
+input.quantity {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #D9A29D;
+  text-align: center;
+  font-size: 24px;
+  margin: 0 10px;
+  background-color: white;
+  color: black;
+}
+
+
+ /* Make table and buttons responsive */
+ @media (max-width: 768px) {
+  .cart-total {
+      margin-bottom: 20px;
+  }
+  .btn-outline-secondary {
+      margin-bottom: 10px;
+  }
+  .cart-list table {
+      font-size: 14px;
+  }
+}
+
+/* Align Continue Shopping button to top left */
+.text-left.mb-3 {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Remove blue color from Continue Shopping button */
+.btn-outline-secondary {
+  color: #000;
+  border-color: #ccc;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  color: #000;
+  border-color: #ccc;
+}
+
+/* Cart Totals styles */
+.cart-total h3 {
+  font-size: 1.5rem;
+}
+
+.cart-total .d-flex {
+  justify-content: space-between;
+}
+
+.cart-total .total-price {
+  font-weight: bold;
+}
+
+/* Proceed to Checkout button should be left-aligned after Cart Totals */
+.cart-total + p {
+  text-align: left;
+}
+
+/* Continue Shopping Button Hover Effect */
+.btn-outline-secondary {
+color: #000;
+border-color: #ccc;
+transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+background-color: #f8f9fa; /* Light gray background on hover */
+color: #000;              /* Text color remains black */
+border-color: #999;        /* Slightly darker border on hover */
+}
+
+
+/* SINGLE PRODUCT PAGE  */
+
+.shopping-page {
+  background-color: #f8f9fa; 
+  padding: 20px; 
+}
+
+.variant-box {
+  display: flex;
+  flex-wrap: wrap; 
+  margin-top: 10px; 
+}
+
+.variant-item {
+  border: 1px solid #ddd; 
+  border-radius: 5px; 
+  padding: 10px; 
+  margin: 5px; 
+  text-align: center; 
+  cursor: pointer; 
+  transition: background-color 0.3s; 
+}
+
+.variant-item:hover {
+  background-color: #f0f0f0; 
+}
+
+.variant-image {
+  max-width: 100px; 
+  height: auto; 
+  margin-bottom: 5px; 
+}
+
+.variant-label {
+  font-weight: bold; 
+}
+
+.selected {
+  border-color: #007bff; 
+  background-color: #e9ecef; 
+}
+
+.image-popup {
+  overflow: hidden; 
+  position: relative; 
+}
+
+.zoom-area {
+  position: absolute;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  display: none; /* Initially hidden */
+  pointer-events: none; /* Disable interactions */
+  z-index: 1000;
+}
+
+.zoomed-image {
+  position: absolute;
+  border: 1px solid #ddd;
+  display: none; /* Initially hidden */
+  z-index: 999;
+}
+
+
+    /* Drop shadow for both sections (coupon and order) */
+    .cart-detail, .coupon-code {
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+  }
+  
+  /* Styling for the "Your Order" and the total price details */
+  .billing-heading {
+      font-weight: bold;
+      margin-bottom: 20px;
+  }
+  
+  /* Styling for the coupon input and button */
+  .input-group .form-control {
+      border-radius: 4px;
+  }
+  
+  .input-group .btn {
+      background-color: #007bff; /* Bootstrap blue */
+      color: white;
+      border-radius: 0 4px 4px 0;
+  }
+  
+  /* A subtle line with drop shadow to separate sections */
+  .border {
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      margin-top: 20px;
+  }
+  

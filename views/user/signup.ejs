@@ -13,52 +13,72 @@
     </div>
     <form id="signform" method="post" action="/signup">
       <div class="form-group">
-          <label for="fullname">Full Name:</label>
-          <input type="text" id="name" name="name" placeholder="Enter your full name" >
+        <label for="fullname">Full Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your full name">
       </div>
-  
+    
       <div class="form-group">
-          <label for="email">Email ID:</label>
-          <input type="text" id="email" name="email" placeholder="Enter your email ID" >
+        <label for="email">Email ID:</label>
+        <input type="text" id="email" name="email" placeholder="Enter your email ID">
       </div>
-  
+    
       <div class="form-group">
-          <label for="phone">Phone:</label>
-          <input type="text" id="phone" name="phone" placeholder="Enter your phone number"  oninput="this.value = this.value.replace(/[^0-9]/g, '');">
-         
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" placeholder="Enter your phone number" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
       </div>
-  
+    
       <div class="form-group">
-          <label for="password">Password:</label>
-          <input type="text" id="password" name="password" placeholder="Enter your password" >
+        <label for="password">Password:</label>
+        <div style="position: relative;">
+          <input type="password" id="password" name="password" placeholder="Enter your password">
+          <button type="button" onclick="togglePasswordVisibility('password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer;">
+            <img src="user/images/eye-icon.png" alt="Toggle Password" id="password-eye" style="width: 20px; height: 20px;">
+          </button>
+        </div>
       </div>
-  
+    
       <div class="form-group">
-          <label for="confirm-password">Confirm Password:</label>
-          <input type="text" id="cpassword" name="cpassword" placeholder="Confirm your password" >
+        <label for="confirm-password">Confirm Password:</label>
+        <div style="position: relative;">
+          <input type="password" id="cpassword" name="cpassword" placeholder="Confirm your password">
+          <button type="button" onclick="togglePasswordVisibility('cpassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer;">
+            <img src="user/images/eye-icon.png" alt="Toggle Password" id="cpassword-eye" style="width: 20px; height: 20px;">
+          </button>
           <% if (typeof error_msg !== 'undefined') { %>
             <div class="alert alert-danger"><%= error_msg %></div>
-        <% } %>
+          <% } %>
+        </div>
       </div>
-  
+    
       <a id="google-auth" href="/auth/google">
         <div class="signup-google">
           <img src="user/images/google.png" alt="Google Logo">
           Sign Up with Google
-      </div> 
+        </div>
       </a>
-
-  
+    
       <div class="button-group">
-          <button type="submit">Continue</button>
+        <button type="submit">Continue</button>
       </div>
-  </form>
-  
+    </form>
     <div class="terms">
       By continuing you agree to our <a href="#">Terms of Use</a> & <a href="#">Privacy Policy</a>
     </div>
   </div>
  
   <script src="user/js/error-fade.js"></script>
+  <!-- <script>
+    function togglePasswordVisibility(passwordFieldId, button) {
+      const passwordField = document.getElementById(passwordFieldId);
+      const isPasswordVisible = passwordField.type === "text";
+  
+      // Toggle the type attribute
+      passwordField.type = isPasswordVisible ? "password" : "text";
+  
+      // Change the icon
+      const eyeIcon = button.querySelector('img');
+      eyeIcon.src = isPasswordVisible ? '/user/images/eye-icon' : 'user/images/eye-slash-icon.png';
+    }
+  </script> -->
 </body>
 </html>

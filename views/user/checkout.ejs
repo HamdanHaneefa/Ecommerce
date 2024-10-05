@@ -1,0 +1,173 @@
+<%- include("../../views/partials/user/header") %>
+
+<section class="ftco-section" style="background-color: white;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Left Side: Checkout Details -->
+            <div class="col-md-6 ftco-animate">
+                <form action="#" class="billing-form" id="checkoutForm">
+                    <h3 class="mb-4 billing-heading" style="font-size: 1.25rem;">Checkout</h3>
+
+                    <!-- Existing Address Section -->
+                    <div class="form-group mt-3">
+                        <label for="existingAddresses" style="font-size: 0.85rem;">Select Existing Address</label>
+                        <% if (addresses && addresses.length > 0) { %>
+                            <select id="existingAddresses" class="form-control" style="font-size: 0.85rem;">
+                                <option value="">Select an address</option>
+                                <% addresses.forEach(address => { %>
+                                    <option value="<%= address.id %>"> <!-- Use address.id instead of the full address string -->
+                                        <%= address.name %> - <%= address.street %>, <%= address.city %>, <%= address.state %> <%= address.zipcode %>, <%= address.country %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        <% } else { %>
+                            <p class="text-muted" style="font-size: 0.85rem;">No addresses exist.</p>
+                        <% } %>
+                    </div>
+
+                    <!-- Add/Edit Address Button -->
+                    <a href="/address">
+                        <button type="button" class="btn btn-primary mt-3">Add/Edit Address</button>
+                    </a>
+
+                    <!-- Payment Method Section -->
+                    <div class="mt-5">
+                        <h3 class="billing-heading mb-4" style="font-size: 1.1rem;">Payment Method</h3>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <div class="radio">
+                                    <label style="font-size: 0.85rem;">
+                                        <input type="radio" name="paymentMethod" value="COD" class="mr-2" required> Cash On Delivery
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <div class="radio">
+                                    <label style="font-size: 0.85rem;">
+                                        <input type="radio" name="paymentMethod" value="razorpay" class="mr-2" required> Razorpay
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <p>
+                            <button id="placeOrderBtn" type="button" class="btn btn-primary" style="width: 200px; padding: 10px 20px;">Place an order</button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Side: Coupon Code Section and Your Order -->
+            <div class="col-md-6">
+                <!-- Coupon Code Section -->
+                <div class="coupon-code bg-light p-3 mb-4" style="box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+                    <h5 class="billing-heading mb-3" style="font-size: 1.1rem;">Coupon Code</h5>
+                    <a href="#" style="font-size: 0.85rem; color: blue;">check available coupons</a>
+                    <div class="input-group mt-2">
+                        <input type="text" class="form-control" placeholder="Enter your coupon code if you have one">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">APPLY</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Line Separator with Drop Shadow -->
+                <div class="separator" style="border-top: 1px solid #ddd; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); margin-bottom: 20px;"></div>
+
+                <!-- Your Order Section -->
+                <div class="cart-detail bg-light p-4" style="box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+                    <h3 class="billing-heading mb-4" style="font-size: 1.25rem;">Your Order</h3>
+                    <div class="border p-3 mb-4">
+                        <ul class="list-unstyled">
+                            <% cartItems.forEach(item => { %>
+                                <li class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.85rem;">
+                                    <strong><%= item.productName %> * <%= item.quantity %></strong> <span>₹<%= item.totalPrice %></span>
+                                </li>
+                            <% }); %>
+                        </ul>
+
+                        <!-- Cart Subtotal -->
+                        <div class="mt-4">
+                            <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                                <span>Cart Subtotal</span>
+                                <span>₹<%= cartTotal %></span>
+                            </h5>
+
+                            <!-- Coupon Offer (Default: None) -->
+                            <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                                <span>Coupon Offer</span>
+                                <span>None</span>
+                            </h5>
+
+                            <!-- Order Total (Same as Cart Subtotal for now) -->
+                            <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                                <span>Order Total</span>
+                                <span>₹<%= cartTotal %></span>
+                            </h5>
+
+                            <!-- Delivery Charge (Default: 0) -->
+                            <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                                <span>Delivery Charge</span>
+                                <span>₹0</span>
+                            </h5>
+                        </div>
+
+                        <!-- Final Total -->
+                        <div class="d-flex justify-content-between mt-2">
+                            <strong>Total:</strong>
+                            <span>₹<%= cartTotal %></span>
+                        </div>
+                    </div>
+                </div>                
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+    document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+        const selectedAddress = document.getElementById('existingAddresses').value;
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+
+        if (!paymentMethod) {
+            toastr.error('Please select a payment method.', "Error");
+            return;
+        }
+
+        const paymentMethodValue = paymentMethod.value;
+        const cartTotalValue = 43798; // Hardcoded total value, replace with dynamic one if needed
+
+        if (!selectedAddress) {
+            toastr.error('Please select an address.', "Error");
+            return;
+        }
+
+        const orderData = {
+            addressId: selectedAddress, 
+            paymentMethod: paymentMethodValue,
+            cartTotal: cartTotalValue
+        };
+
+        $.ajax({
+            url: '/cart/checkout/place-order',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function(responseData) {
+                console.log('Order placed successfully:', responseData);
+                
+            },
+            error: function(xhr, status, error) {
+                console.error('Error placing order:', xhr.responseText || error);
+                toastr.error('There was an error placing your order.', "Error");
+            }
+        });
+    });
+</script>
+
+<%- include("../../views/partials/user/footer") %>

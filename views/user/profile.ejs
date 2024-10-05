@@ -1,64 +1,64 @@
-<%- include("../../views/partials/user/header") %>
+    <%- include("../../views/partials/user/header") %>
 
-<!-- Include Cropper.js CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
+    <!-- Include Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
 
-<div class="container-fluid">
-    <div class="row">
-        <%- include("../../views/partials/user/sidebar") %>
+    <div class="container-fluid">
+        <div class="row">
+            <%- include("../../views/partials/user/sidebar") %>
 
-        <div class="col-md-6 offset-md-1 mt-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="profile-page-title mb-4">Profile Page</h2>
-                <!-- Delete Profile Button -->
-                <form action="/profile/delete" method="POST" id="deleteProfileForm" class="mb-0">
-                    <button type="submit" class="btn btn-danger">Delete Profile</button>
+            <div class="col-md-6 offset-md-1 mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="profile-page-title mb-4">Profile Page</h2>
+                    <!-- Delete Profile Button -->
+                    <form action="/profile/delete" method="POST" id="deleteProfileForm" class="mb-0">
+                        <button type="submit" class="btn btn-danger">Delete Profile</button>
+                    </form>
+                </div>
+
+                <!-- Error Message Container -->
+                <% if (err_msg && err_msg.length > 0) { %> 
+                    <div class="alert alert-custom-danger">
+                        <strong>Error:</strong> <%= err_msg[0] %>
+                        <button type="button" class="close" onclick="this.parentElement.style.display='none';">&times;</button>
+                    </div> 
+                <% } %>
+
+                <form action="/profile/update" method="POST" enctype="multipart/form-data">
+                    <div class="profile-image-upload-container text-center mb-4">
+                        <input type="file" id="profileImageInput" name="profileImage" accept="image/*" style="display: none;" />
+                        <div class="profile-image-circle" id="profileImageCircle" onclick="document.getElementById('profileImageInput').click();">
+                            <img id="profileImagePreview" src="/uploads/profile-Image/<%= user.profileImage || 'default-profile.png' %>" alt="Profile Image">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="firstName" name="name" required value="<%= user.name %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required value="<%= user.email %>">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mobile" class="form-label">Mobile Number *</label>
+                        <input type="text" class="form-control" id="mobile" name="phone" required value="<%= user.phone %>">
+                    </div>
+
+                    <!-- Button Container -->
+                    <div class="button-container d-flex flex-column flex-md-row justify-content-between mt-4">
+                        <div class="d-flex mb-2 mb-md-0">
+                            <button type="reset" class="btn btn-dark mr-2" id="discardChangesBtn">Discard Changes</button>
+                            <button type="submit" class="btn btn-info mr-2">Save Changes</button>
+                        </div>
+                        <a href="/profile/change-password" class="btn btn-secondary">Change Password</a>
+                    </div>
                 </form>
             </div>
-
-            <!-- Error Message Container -->
-            <% if (err_msg && err_msg.length > 0) { %> 
-                <div class="alert alert-custom-danger">
-                    <strong>Error:</strong> <%= err_msg[0] %>
-                    <button type="button" class="close" onclick="this.parentElement.style.display='none';">&times;</button>
-                </div> 
-            <% } %>
-
-            <form action="/profile/update" method="POST" enctype="multipart/form-data">
-                <div class="profile-image-upload-container text-center mb-4">
-                    <input type="file" id="profileImageInput" name="profileImage" accept="image/*" style="display: none;" />
-                    <div class="profile-image-circle" id="profileImageCircle" onclick="document.getElementById('profileImageInput').click();">
-                        <img id="profileImagePreview" src="/uploads/profile-Image/<%= user.profileImage || 'default-profile.png' %>" alt="Profile Image">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="firstName" class="form-label">Full Name</label>
-                    <input type="text" class="form-control" id="firstName" name="name" required value="<%= user.name %>">
-                </div>
-
-                <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required value="<%= user.email %>">
-                </div>
-
-                <div class="form-group">
-                    <label for="mobile" class="form-label">Mobile Number *</label>
-                    <input type="text" class="form-control" id="mobile" name="phone" required value="<%= user.phone %>">
-                </div>
-
-                <!-- Button Container -->
-                <div class="button-container d-flex flex-column flex-md-row justify-content-between mt-4">
-                    <div class="d-flex mb-2 mb-md-0">
-                        <button type="reset" class="btn btn-dark mr-2" id="discardChangesBtn">Discard Changes</button>
-                        <button type="submit" class="btn btn-info mr-2">Save Changes</button>
-                    </div>
-                    <a href="/profile/change-password" class="btn btn-secondary">Change Password</a>
-                </div>
-            </form>
         </div>
     </div>
-</div>
 
 <!-- Modal for Cropper -->
 <div id="cropperModal" class="modal" style="display: none;">
@@ -158,5 +158,3 @@
     });
 </script>
 
-
-<%- include("../../views/partials/user/footer") %>

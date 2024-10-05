@@ -1,5 +1,5 @@
 const User = require("../../models/userSchema");
-
+const Product = require('../../models/productSchema');
 
 const pageNotFound = async (req, res) => {
   try {
@@ -11,15 +11,14 @@ const pageNotFound = async (req, res) => {
 
 const loadHomepage = async (req, res) => {
   try {
-    const user = req.session.user;
-    if (user) {
-      const userData = await User.findById(user);
-      res.render("home", { user: userData });
-    } else {
-      res.render("home", { user: null });
-    }
+    const userData = req.session.user ? await User.findById(req.session.user) : null;
+    const products = await Product.find({ isActive: true });
+    const errorMessage = req.session.errorMessage ? req.session.errorMessage : null ;
+    req.session.errorMessage = null;
+    res.render('home', { user: userData, products,errorMessage});
+
   } catch (error) {
-    console.log("Error loading homepage:", error);
+    console.error("Error loading homepage:", error);
     res.status(500).send("Server error");
   }
 };
@@ -54,7 +53,7 @@ const loadforget = async (req,res)=>{
   try {
     res.render("forgot-password")
   } catch (error) {
-    console.log("Error in forgotten password :",err)
+    console.log("Error in forgotten password :",error)
     res.redirect("pageNotFound")
   }
 }

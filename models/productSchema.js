@@ -1,27 +1,37 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-// // Schema for individual variants (embedded inside the productSchema)
-// const variantSchema = new Schema({
-//     color: {
-//         type: String,
-//         required: true
-//     },
-//     price: {
-//         type: Number,
-//         required: true
-//     },
-//     stock: {
-//         type: Number,
-//         required: true
-//     },
-//     images: {
-//         type: [String],
-//         required: true
-//     }
-// }, { _id: false }); 
+// Define the Variant Schema
+const variantSchema = new Schema({
+    color: {
+        type: String,
+        required: true
+    },
+    images: {
+        type: [String], 
+        required: true
+    },
+    stock: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    price: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
 
-// // Main product schema
+// Main Product Schema
 const productSchema = new Schema({
     productName: {
         type: String,
@@ -43,16 +53,26 @@ const productSchema = new Schema({
         type: String,
         required: true
     },
-    ProductImage:{
+    price:{
         type:String,
         required:true
     },
-    isActive:{
-        type:Boolean,
-        default:true
-    }
+    stock:{
+        type:String,
+        required:true
+    },
+    ProductImage: {
+        type: String,
+        required: true
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    variants: [variantSchema] // Embed variantSchema as an array
 }, { timestamps: true });
 
+// Create the Product model
 const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;

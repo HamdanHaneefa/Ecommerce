@@ -1,9 +1,11 @@
 const User = require("../../models/userSchema");
 const Address = require('../../models/addressSchema');
+const Order = require('../../models/orderSchema')
 const path = require('path')
 const fs = require('fs')
 const session = require("express-session");
 const bcrypt = require("bcrypt");
+const { overwriteMiddlewareResult } = require("mongoose");
 
 
 
@@ -309,25 +311,25 @@ const editAddress = async (req, res) => {
             // Validation for address fields
             if (!name || !zipcode || !city || !state || !country) {
                 console.log("Validation Error: All fields are required.");
-                req.session.toastrMsg = "All fields are required."; // Set Toastr message
+                req.session.toastrMsg = "All fields are required."; 
                 return res.redirect("/address");
             }
 
             if (!namePattern.test(name)) {
                 console.log("Validation Error: Name should not contain Numbers.");
-                req.session.toastrMsg = "Name should only contain letters and spaces."; // Set Toastr message
+                req.session.toastrMsg = "Name should only contain letters and spaces."; 
                 return res.redirect('/address');
             }
 
             if (!phonePattern.test(phone)) {
                 console.log("Validation Error: Phone number must be exactly 10 digits.");
-                req.session.toastrMsg = "Phone number must be exactly 10 digits."; // Set Toastr message
+                req.session.toastrMsg = "Phone number must be exactly 10 digits."; 
                 return res.redirect("/address");
             }
 
             if (!zipPattern.test(zipcode)) {
                 console.log("Validation Error: Zip code must be between 5 and 10 digits.");
-                req.session.toastrMsg = "Zip code must be between 5 and 10 digits."; // Set Toastr message
+                req.session.toastrMsg = "Zip code must be between 5 and 10 digits."; 
                 return res.redirect("/address");
             }
 
@@ -349,7 +351,7 @@ const editAddress = async (req, res) => {
             if (result.modifiedCount === 0) {
                 return res.status(404).send("Address not found or no changes made");
             }
-
+            
             res.redirect('/address');
         } else {
             res.redirect('/');
@@ -360,6 +362,29 @@ const editAddress = async (req, res) => {
     }
 }
 
+const orders = async (req,res) =>{
+    try {
+      if(req.session.user){
+        
+        const userId = req.session.user; 
+        const orders = await Order.find({ 'orderedItems.address': userId }) 
+          .populate('orderedItems.product')
+          .exec();
+    
+          console.log(orders)
+        // res.render('path/to/orderHistory', { orders, err_msg: null }); 
+  
+  
+  
+      }else{
+        req.session.errorMessage = "Oops! It seems you need to log in again.";
+        return res.redirect("/");
+      }
+    } catch (error) {
+      console.log("Error occured in orders",error)
+      res.redirect('/')
+    }
+  }
 
 
 
@@ -373,5 +398,6 @@ module.exports ={
     loadAddAddress,
     removeAddress,
     editAddress,
-    deleteImage
+    deleteImage,
+    orders
 }

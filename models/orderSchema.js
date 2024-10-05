@@ -1,47 +1,63 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
-const {v4:uuidv4} = require('uuid');
+const { Schema } = mongoose;
+const { v4: uuidv4 } = require('uuid');
 const Product = require('./productSchema');
 
 const orderSchema = new Schema({
-    orderId:{
-        type:String,
-        default:()=>uuidv4(),
-        unique:true
+    orderId: {
+        type: String,
+        default: () => uuidv4(),
+        unique: true
     },
-    orderedItems:[{
-        product:{
-            required:true
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true 
+    },
+    orderedItems: [{
+        product: {
+            type: Schema.Types.ObjectId,
+            ref: "Product",  
+            required: true
         },
-        quantity:{
-            type:Number,
-            required:true
+        quantity: {
+            type: Number,
+            required: true
         },
-        price:{
-            type:Number,
-            default:0
+        price: {
+            type: Number,
+            required: true  
         },
-        address:{
-            type:Schema.Types.ObjectId,
-            ref:'User',
-            required:true
+        address: {
+            type: Schema.Types.ObjectId,
+            ref: 'Address',
+            required: true
         },
-        status:{
-            type:String,
-            required:true,
-            enum:['Pending','Processing','Shipped','Delivered','Return Request','Returned']
+        status: {
+            type: String,
+            required: true,
+            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned']
         },
-        createdOn:{
-            type:Date,
-            default:Date.now,
-            required:true
+        createdOn: {
+            type: Date,
+            default: Date.now,
+            required: true
         },
-        couponApplied:{
-            type:Boolean,
-            default:false
+        couponApplied: {
+            type: Boolean,
+            default: false
         }
-    }]
-})
+    }],
+    totalAmount: {
+        type: Number,
+        required: true
+    },
+    orderStatus: {
+        type: String,
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'],
+        default: 'Pending'
+    }
+}, { timestamps: true }); 
 
-const Order = mongoose.model("Order",orderSchema);
-module.exports = Order
+const Order = mongoose.model("Order", orderSchema);
+module.exports = Order;

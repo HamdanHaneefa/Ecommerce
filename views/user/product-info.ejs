@@ -1,0 +1,185 @@
+<%- include("../../views/partials/user/header") %>
+
+<section class="ftco-section shopping-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mb-5 ftco-animate">
+                <div class="image-popup prod-img-bg" id="product-image-container">
+                    <a href="/uploads/product-images/<%= product.ProductImage %>" class="img-fluid" alt="<%= product.productName %>"">
+                        <img src="/uploads/product-images/<%= product.ProductImage %>" class="img-fluid" alt="<%= product.productName %>" id="product-image">
+                    </a>
+                    <div class="zoom-area" id="zoom-area"></div>
+                    <img src="/uploads/product-images/<%= product.ProductImage %>" class="zoomed-image" id="zoomed-image">
+                </div>
+            </div>
+            <div class="col-lg-6 product-details pl-md-5 ftco-animate">
+                <h3><%= product.productName %></h3>
+                <p class="price"><span>₹<%= product.price %></span></p>
+                <p><%= product.description %></p>
+                <p class="stock-info">
+                    <strong>Stock Available:</strong> <%= product.stock > 0 ? product.stock + ' items' : 'Out of Stock' %>
+                </p>
+                <label for="variant-select">Choose a variant:</label>
+                <div class="variant-box" id="variant-select">
+                    <% if (product.variants && product.variants.length > 0) { %>
+                        <% for (let i = 0; i < product.variants.length; i++) { %>
+                            <div class="variant-item" 
+                                 data-id="<%= product.variants[i]._id %>" 
+                                 data-image="/uploads/variant-images/<%= product.variants[i].images[0] %>" 
+                                 data-price="<%= product.variants[i].price %>">
+                                <img src="/uploads/variant-images/<%= product.variants[i].images[0] %>" class="variant-image" alt="<%= product.variants[i].color %>">
+                                <div class="variant-label"><%= product.variants[i].color %></div>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <div>No variants available</div>
+                    <% } %>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="w-100"></div>
+                    <div class="input-group col-md-6 d-flex mb-3">
+                        <span class="input-group-btn mr-2">
+                            <button type="button" class="quantity-left-minus btn" data-type="minus" data-field="">
+                                <i class="ion-ios-remove"></i>
+                            </button>
+                        </span>
+                        <input type="text" id="quantity" name="quantity" class="quantity form-control input-number" value="1" min="1" max="100">
+                        <span class="input-group-btn ml-2">
+                            <button type="button" class="quantity-right-plus btn" data-type="plus" data-field="">
+                                <i class="ion-ios-add"></i>
+                            </button>
+                        </span>
+                    </div>
+                    <div class="col-md-12"></div>
+                </div>
+                <p>
+                    <a href="/cart" class="btn btn-black py-3 px-5 mr-2">Add to Cart</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="ftco-section shopping-page">
+    <div class="container">
+        <div class="row justify-content-center mb-3 pb-3">
+            <div class="col-md-12 heading-section text-center ">
+                <h2 class="mb-4">Related Headphones and Earphones</h2>
+            </div>
+        </div>       
+    </div>
+    <div class="container">
+        <div class="row">
+            <% if (relatedproducts && relatedproducts.length > 0) { %>
+                <% for (let i = 0; i < relatedproducts.length; i++) { %>
+                    <div class="col-sm-12 col-md-6 col-lg-3 d-flex">
+                        <div class="product d-flex flex-column">
+                            <a href="/product/<%= relatedproducts[i]._id %>" class="img-prod">
+                                <img class="img-fluid" src="/uploads/product-images/<%= relatedproducts[i].ProductImage %>" alt="<%= relatedproducts[i].productName %>">
+                                <div class="overlay"></div>
+                            </a>
+                            <div class="text py-3 pb-4 px-3">
+                                <div class="d-flex">
+                                    <div class="cat">
+                                        <span><%= relatedproducts[i].brand %></span>
+                                    </div>
+                                    <div class="rating">
+                                        <p class="text-right mb-0">
+                                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                            <a href="#"><span class="ion-ios-star-outline"></span></a>
+                                        </p>
+                                    </div>
+                                </div>
+                                <h3><a href="/product/<%= relatedproducts[i]._id %>"><%= relatedproducts[i].productName %></a></h3>
+                                <div class="pricing">
+                                    <p class="price"><span>₹<%= relatedproducts[i].price %></span></p>
+                                </div>
+                                <p class="bottom-area d-flex px-3">
+                                    <a href="/cart/add/<%= relatedproducts[i]._id %>" class="add-to-cart text-center py-2 mr-1">
+                                        <span>Add to cart <i class="ion-ios-add ml-1"></i></span>
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <div class="col-md-12 text-center">
+                    <p>No related products exist.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="/user/js/zoom-image.js"></script>
+
+<script>
+    $(document).ready(function() {
+        var quantity = 1; 
+
+        $('.quantity-right-plus').click(function(e) {
+            e.preventDefault();
+            quantity = parseInt($('#quantity').val());
+            if (quantity < 100) {
+                $('#quantity').val(quantity + 1);
+            }
+        });
+
+        $('.quantity-left-minus').click(function(e) {
+            e.preventDefault();
+            quantity = parseInt($('#quantity').val());
+            if (quantity > 1) {
+                $('#quantity').val(quantity - 1);
+            }
+        });
+
+        let selectedVariantPrice = document.querySelector('.price span').textContent.replace('₹', '');
+
+
+        $('.variant-item').click(function() {
+            const newImageSrc = $(this).data('image');
+            selectedVariantPrice = $(this).data('price');
+            $('.prod-img-bg img').attr('src', newImageSrc);
+            $('.price span').text('₹' + selectedVariantPrice);
+            $('.variant-item').removeClass('selected');
+            $(this).addClass('selected');
+        });
+
+       
+        $('.btn-black').click(function(e) {
+            e.preventDefault();
+            const selectedVariantId = $('.variant-item.selected').data('id');
+            const productId = '<%= product._id %>'; 
+            const quantity = $('#quantity').val();
+
+            $.ajax({
+                url: '/cart/add',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    productId: productId,
+                    variantId: selectedVariantId,
+                    quantity: quantity
+                }),
+                success: function(response) {
+                    toastr.success('Product added to cart successfully');
+                    window.location.href = '/cart';
+                },
+                error: function(error) {
+                    const errorMessage = error.responseJSON?.error; 
+                    toastr.error(errorMessage || 'An unknown error occurred.', "Error", { onclick: () => window.location.href = '/login' });
+                }
+            });
+        });
+    });
+</script>
+
+
+<%- include("../../views/partials/user/footer") %>

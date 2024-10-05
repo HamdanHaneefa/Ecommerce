@@ -15,6 +15,11 @@ const cartSchema = new Schema({
             ref:"Product",
             required:true
         },
+        variantId: { 
+            type: Schema.Types.ObjectId,
+            ref: "Variant", 
+            required: true
+        },
         quantity:{
             type:Number,
             default:1      
@@ -23,15 +28,27 @@ const cartSchema = new Schema({
             type:Number,
             required:true
         },
+        stock:{
+            type:Number,
+            required:true
+        },
         totalPrice:{
             type:Number,
             required:true
+        },
+        variantImage: {
+            type: String,
+            required: false
         },
         status:{
             type:String,
             default:'placed'
         }
-    }]
+    }],
+    cartTotal:{
+        type:Number,
+        required:true
+    }
 })
 
 

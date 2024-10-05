@@ -16,7 +16,7 @@ db()
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(flash());
-// app.use(morgan('dev'))
+// app.use(morgan('dev')) 
 app.use(session({
    secret:process.env.SESSION_KEY,
    resave:false,

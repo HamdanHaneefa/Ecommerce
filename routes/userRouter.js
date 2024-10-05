@@ -40,6 +40,7 @@ router.post('/change-password',authController.changePassword)
 
 //SHOP
 router.get('/shop',shopController.loadShop)
+router.get('/product/:id',shopController.productInfo)
 
 
 //PROFILE
@@ -55,5 +56,24 @@ router.get('/address/add-address',profileController.loadAddAddress)
 router.post('/address/add-address',profileController.addAddress)
 router.get('/address/:id/remove',profileController.removeAddress)
 router.post('/address/:id/edit',profileController.editAddress)
+
+//ADD TO CART
+
+router.get('/cart',shopController.loadCart)
+router.post('/cart/add',shopController.addCart)
+router.get('/cart/remove/:id',shopController.deleteProduct)
+router.post('/updateQuantity',shopController.updateQuantity)
+
+
+// CHECKOUT
+router.get('/cart/checkout',shopController.checkout)
+router.post('/cart/add-address',shopController.addCartAddress)
+router.post('/cart/checkout/place-order',shopController.placeOrder)
+
+
+//ORDERS
+router.get('/orders',profileController.orders)
+
+
 
 module.exports = router 

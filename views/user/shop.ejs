@@ -1,171 +1,130 @@
-<%-include("../../views/partials/user/header")%>
+<%- include("../../views/partials/user/header") %>
 
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #e5f3fb;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            margin-top: 50px;
-        }
-
-        .product {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 600px;
-        }
-
-        .product img {
-            width: 100%;
-            border-radius: 10px;
-        }
-
-        .details {
-            margin-top: 20px;
-        }
-
-        .details h2 {
-            color: #333;
-        }
-
-        .details .price {
-            color: #28a745;
-            font-size: 24px;
-        }
-
-        .details .old-price {
-            text-decoration: line-through;
-            color: grey;
-            margin-left: 10px;
-        }
-
-        .details select, .details input {
-            margin-top: 10px;
-            padding: 10px;
-            width: 100%;
-        }
-
-        .details .button-container {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .button-container button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .button-container button:hover {
-            background-color: #0056b3;
-        }
-
-        .key-features {
-            margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 10px;
-        }
-
-        .key-features h3 {
-            margin-bottom: 10px;
-        }
-
-        .key-features ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .key-features ul li {
-            margin-bottom: 10px;
-        }
-
-        .wishlist, .wishlist a {
-            text-decoration: none;
-            color: #007bff;
-            font-size: 16px;
-        }
-
-        .wishlist:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
+<section class="ftco-section bg-light">
     <div class="container">
-        <div class="product">
-            <img src="headphones-image.jpg" alt="Product Image">
-            <div class="details">
-                <h2>SONY ULT WEAR WH-ULT900N Bluetooth Headset with Mic</h2>
-                <p class="price">
-                    ₹16,990.00
-                    <span class="old-price">₹24,990.00</span>
-                </p>
-                <div>
-                    <label for="color">Color</label>
-                    <select id="color">
-                        <option value="black">Black</option>
-                        <option value="off-white">Off-White</option>
-                        <option value="forest-grey" selected>Forest Grey</option>
-                    </select>
+        <div class="row">
+            <!-- PRODUCTS DETAILS -->
+            <div class="col-md-8 col-lg-10 order-md-last">
+                <div class="row">
+                    <% for (let i = 0; i < products.length; i++) { %> <!-- Loop through each product -->
+                        <div class="col-sm-12 col-md-12 col-lg-4 ftco-animate d-flex">
+                            <div class="product d-flex flex-column">
+                                <a href="/product/<%= products[i]._id %>" class="img-prod">
+                                    <img class="img-fluid" src="/uploads/product-images/<%= products[i].ProductImage %>" alt="<%= products[i].productName %>">
+                                    <div class="overlay"></div>
+                                </a>
+                                <div class="text py-3 pb-4 px-3">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="cat">
+                                            <span><%= products[i].brand %></span>
+                                        </div>
+                                        <div class="wishlist">
+                                            <a href="#" class="wishlist-button" title="Add to Wishlist">
+                                                <span class="ion-ios-heart-outline"></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <h3><a href="#"><%= products[i].productName %></a></h3> 
+                                    <div class="pricing">
+                                        <p class="price">
+                                            <span class="price-sale">₹<%= products[i].price %></span> 
+                                        </p>
+                                    </div>
+                                    <p class="bottom-area d-flex px-3">
+                                        <!-- <a href="#" class="add-to-cart text-center py-2 mr-1"><span>Add to cart <i class="ion-ios-add ml-1"></i></span></a>
+                                        <a href="#" class="buy-now text-center py-2">Buy now<span><i class="ion-ios-cart ml-1"></i></span></a> -->
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %> <!-- End product loop -->
                 </div>
-                <div class="button-container">
-                    <div>
-                        <input type="number" value="2" min="1">
-                    </div>
-                    <button>Add to Cart</button>
-                </div>
-                <p class="wishlist">
-                    <a href="#">Add to Wishlist</a>
-                </p>
             </div>
 
-            <div class="key-features">
-                <h3>Key Features</h3>
-                <ul>
-                    <li>Orientation Type: Over Ear</li>
-                    <li>Connectivity: Bluetooth Version 5.2</li>
-                    <li>Battery Life: 50 Hours with ANC Off, 30 Hours with ANC On</li>
-                    <li>Fast Charging: Yes</li>
-                    <li>Noise Cancellation: Active Noise Cancellation</li>
-                    <li>Voice Assistant: Google, Siri, Alexa</li>
-                    <li>USP: 40 mm Neodymium Driver, Ambient Sound Mode</li>
-                    <li>Warranty: 12 Months</li>
-                </ul>
+            <!-- CATEGORIES  -->
+            <div class="col-md-4 col-lg-2">
+                <div class="sidebar">
+                    <div class="sidebar-box-2">
+                        <h2 class="heading">Categories</h2>
+                        <div class="fancy-collapse-panel">
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingOne">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Brand
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                        <div class="panel-body">
+                                            <ul class="brand-list">
+                                                <% brands.forEach(brand => { %>
+                                                    <li><a href="/shop/brand/<%= brand._id %>"><%= brand.name %></a></li>                                                <% }); %>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingTwo">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Connection Type
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                        <div class="panel-body">
+                                            <ul>
+                                                <li><a href="#">Wireless</a></li>
+                                                <li><a href="#">True Wireless</a></li>
+                                                <li><a href="#">Wired</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingThree">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Type
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                        <div class="panel-body">
+                                            <ul>
+                                                <li><a href="#">In-Ear</a></li>
+                                                <li><a href="#">On-Ear</a></li>
+                                                <li><a href="#">Over-Ear</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel panel-default">
+                                    <div class="panel-heading" role="tab" id="headingFour">
+                                        <h4 class="panel-title">
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">Price and Others
+                                            </a>
+                                        </h4>
+                                    </div>
+                                    <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                                        <div class="panel-body">
+                                            <ul class="filter-list">
+                                                <li><a href="/shop?sort=default">Default</a></li>
+                                                <li><a href="/shop?sort=priceHigh">High to Low</a></li>
+                                                <li><a href="/shop?sort=priceLow">Low to High</a></li>
+                                                <li><a href="/shop?sort=newArrivals">New Arrivals</a></li>
+                                                <li><a href="/shop?sort=aToZ">A-Z</a></li>
+                                                <li><a href="/shop?sort=zToA">Z-A</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</section>
 
-
-
-
-
-
-
-
-
-
-<!-- <%-include("../../views/partials/user/footer")%> -->
+<%- include("../../views/partials/user/footer") %>
