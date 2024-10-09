@@ -8868,7 +8868,7 @@ h1, h2, h3, h4, h5,
       -webkit-transform: translateY(-50%);
       -ms-transform: translateY(-50%);
       transform: translateY(-50%);
-      background: #dbcc8f;
+      /* background: #dbcc8f; OVERLAY  */
       width: 230px;
       height: 230px;
       margin: 0 auto;
@@ -11478,3 +11478,117 @@ border-color: #999;        /* Slightly darker border on hover */
       margin-top: 20px;
   }
   
+
+
+  /* ORDER HISTORY  */
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container-fluid {
+    padding: 1.5rem; /* Reduced padding */
+}
+
+/* Order list container */
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Reduce gap between order cards */
+}
+
+/* Order card styles */
+.order-card {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* Softer shadow */
+    padding: 0.75rem; /* Reduced padding */
+    background-color: white;
+    transition: transform 0.2s ease-in-out;
+}
+
+.order-card:hover {
+    transform: scale(1.01);
+}
+
+/* Image styling */
+.product-image {
+    width: 50px; /* Smaller fixed size for image */
+    height: 50px;
+    margin-right: 15px;
+    border-radius: 8px;
+    overflow: hidden; /* Ensure rounded corners */
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure image covers the box */
+}
+
+/* Text and Info Styling */
+.order-details {
+    flex: 1;
+}
+
+.order-details h5 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.order-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+.order-info div {
+    text-align: center;
+}
+
+.order-status {
+    font-weight: bold;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+.continue-shopping {
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.continue-shopping:hover {
+    background-color: #0056b3;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .order-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .order-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

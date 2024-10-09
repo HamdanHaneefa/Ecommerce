@@ -8,9 +8,10 @@ const Brand = require('../../models/brandSchema')
 
 const loadShop = async (req, res) => {
   try {
-      const { sort } = req.query;
+      const { sort ,brandSort } = req.query;
+     
       let products = await Product.find({ isActive: true }).populate('brand'); 
-
+    
       if (sort === 'priceHigh') {
           products.sort((a, b) => b.price - a.price); 
       } else if (sort === 'priceLow') {
@@ -21,6 +22,9 @@ const loadShop = async (req, res) => {
           products.sort((a, b) => a.productName.localeCompare(b.productName)); 
       } else if (sort === 'zToA') {
           products.sort((a, b) => b.productName.localeCompare(a.productName)); 
+      } else if (sort === 'default'){
+        res.redirect('/shop');
+        return; 
       }
 
       const brands = await Brand.find({ isActive: true });
@@ -31,17 +35,29 @@ const loadShop = async (req, res) => {
       }
 
       res.render("shop", { products, user, brands });
+      
   } catch (error) {
       console.error("Error occurred in loadShop:", error);
       res.redirect("/");
   }
 };
 
-
 const productInfo = async (req, res) => {
   try {
     const productId = req.params.id;
+    const variantId = req.query.variant;
     const product = await Product.findById(productId);
+
+    let variant = null;
+    
+    if (variantId) {
+      variant = product.variants.find(v => v._id.toString() === variantId);
+    }
+
+    if (req.xhr) {
+      return res.json({ variant });
+    }
+
     const relatedproducts = await Product.find({
       isActive: true,
       brand: product.brand,
@@ -54,12 +70,14 @@ const productInfo = async (req, res) => {
       user = await User.findById(userId);
     }
 
-    res.render("product-info", { user, product, relatedproducts });
+    res.render("product-info", { user, product, variant, relatedproducts });
+
   } catch (error) {
     console.log("Error occurred in productInfo:", error);
     res.redirect("/");
   }
 };
+
 
 const addCart = async (req, res) => {
   try {
@@ -71,20 +89,16 @@ const addCart = async (req, res) => {
       const userId = req.session.user;
 
       if (!quantityNum || quantityNum <= 0) {
-        return res
-          .status(400)
-          .json({ error: "Quantity must be greater than 0." });
+        return res.status(400).json({ error: "Quantity must be greater than 0." });
       }
-
       if (!variantId || !productId) {
-        const errorMessage = !variantId
-          ? "Please select a variant."
-          : "Product not found.";
-        return !variantId
-          ? res.status(400).json({ error: errorMessage })
-          : res.redirect("/shop");
+        if (!variantId) {
+          return res.status(400).json({ error: "Please select a variant." });
+        } else {
+          return res.redirect("/shop");
+        }
       }
-
+      
       const product = await Product.findById(productId);
       if (!product) {
         return res.status(404).json({ error: "Product not found." });
@@ -116,28 +130,19 @@ const addCart = async (req, res) => {
         }
 
         if (newTotalQuantity > 6) {
-          return res
-            .status(400)
-            .json({
-              error: "You cannot add more than 6 units of this product.",
-            });
+          return res.status(400).json({ error: "You cannot add more than 6 units of this product."});
         }
 
         cart.items[existingItemIndex].quantity = newTotalQuantity;
         cart.items[existingItemIndex].totalPrice = price * newTotalQuantity;
+      
       } else {
         if (quantityNum > stock) {
-          return res
-            .status(400)
-            .json({ error: "Quantity exceeds stock available." });
+          return res.status(400).json({ error: "Quantity exceeds stock available." });
         }
 
         if (quantityNum > 6) {
-          return res
-            .status(400)
-            .json({
-              error: "You cannot add more than 6 units of this product.",
-            });
+          return res.status(400).json({error: "You cannot add more than 6 units of this product."});
         }
 
         const totalPrice = price * quantityNum;
@@ -158,15 +163,13 @@ const addCart = async (req, res) => {
       await cart.save();
 
       req.session.successMsg = "Product added to cart successfully";
-      res.status(200).json({ success: "Product added to cart successfully!" });
+      res.status(200).json({ success: "Product added to cart successfully!" ,redirectUrl:'/cart'});
     } else {
       res.status(400).json({ error: "User must be logged in first." });
     }
   } catch (error) {
     console.log("Error occurred in addCart:", error);
-    res.status(500).json({
-      error: "An error occurred while adding the product to the cart.",
-    });
+    res.status(500).json({error: "An error occurred while adding the product to the cart."});
   }
 };
 
@@ -310,7 +313,7 @@ const updateQuantity = async (req, res) => {
 
 
 const checkout = async (req, res) => {
-  try {
+  try { 
     if (req.session.user) {
       const userId = req.session.user;
       const userCart = await Cart.findOne({ userId: req.session.user });
@@ -412,9 +415,9 @@ const addCartAddress = async (req, res) => {
 const placeOrder = async (req, res) => {
   try {
     const userId = req.session.user;
-    const { addressId, paymentMethod, cartTotal } = req.body;
+    const { addressId, paymentMethod } = req.body;
 
-    if (!userId || !addressId || !paymentMethod || !cartTotal) {
+    if (!userId || !addressId || !paymentMethod ) {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
@@ -433,18 +436,26 @@ const placeOrder = async (req, res) => {
         return res.status(404).json({ success: false, message: "Product not found." });
       }
 
-      if (item.quantity > product.stock) {
+      const variant = product.variants.id(item.variantId);
+
+      if (!variant) {
+        return res.status(404).json({ success: false, message: `Variant not found for product ${product.productName}.` });
+      }
+
+      if (item.quantity > variant.stock) {
         return res.status(400).json({ success: false, message: `Insufficient stock for ${product.productName}.` });
       }
 
-      product.stock -= item.quantity;
+      variant.stock -= item.quantity;
       await product.save();
 
       orderedItems.push({
         product: product._id,
+        variantId: variant._id,
         quantity: item.quantity,
-        price: product.price,
+        price: variant.price,
         address: addressId,
+        paymentMethod:paymentMethod,
         status: 'Pending',
         createdOn: new Date(),
         couponApplied: false,
@@ -454,7 +465,7 @@ const placeOrder = async (req, res) => {
     const order = new Order({
       userId,
       orderedItems,
-      totalAmount: cartTotal,
+      totalAmount: cartItems.cartTotal,
       orderStatus: 'Pending',
     });
 

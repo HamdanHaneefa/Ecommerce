@@ -126,8 +126,10 @@
 </section>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.getElementById('placeOrderBtn').addEventListener('click', async () => {
@@ -140,7 +142,6 @@
         }
 
         const paymentMethodValue = paymentMethod.value;
-        const cartTotalValue = 43798; // Hardcoded total value, replace with dynamic one if needed
 
         if (!selectedAddress) {
             toastr.error('Please select an address.', "Error");
@@ -150,7 +151,6 @@
         const orderData = {
             addressId: selectedAddress, 
             paymentMethod: paymentMethodValue,
-            cartTotal: cartTotalValue
         };
 
         $.ajax({
@@ -160,13 +160,24 @@
             data: JSON.stringify(orderData),
             success: function(responseData) {
                 console.log('Order placed successfully:', responseData);
-                
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: responseData.message || 'Your order has been placed successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'Okay'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/orders';
+                    }
+                });
             },
             error: function(xhr, status, error) {
-                console.error('Error placing order:', xhr.responseText || error);
-                toastr.error('There was an error placing your order.', "Error");
+                console.error('Error placing order:', error);
+                toastr.error( xhr.responseText || error, "Error");
             }
         });
+
     });
 </script>
 

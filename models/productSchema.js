@@ -21,6 +21,10 @@ const variantSchema = new Schema({
         required: true,
         min: 0
     },
+    description:{
+        type: String,
+        required:true
+    },
     isActive: {
         type: Boolean,
         default: true
@@ -69,7 +73,7 @@ const productSchema = new Schema({
         type: Boolean,
         default: true
     },
-    variants: [variantSchema] // Embed variantSchema as an array
+    variants: [variantSchema] 
 }, { timestamps: true });
 
 // Create the Product model

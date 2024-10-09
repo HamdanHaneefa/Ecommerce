@@ -20,6 +20,11 @@ const orderSchema = new Schema({
             ref: "Product",  
             required: true
         },
+        variantId: {
+            type: Schema.Types.ObjectId,
+            ref: "Product.variants",
+            required: true
+        },
         quantity: {
             type: Number,
             required: true
@@ -32,6 +37,10 @@ const orderSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'Address',
             required: true
+        },
+        paymentMethod: {
+            type: String,
+            required: true  
         },
         status: {
             type: String,
@@ -52,11 +61,6 @@ const orderSchema = new Schema({
         type: Number,
         required: true
     },
-    orderStatus: {
-        type: String,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned'],
-        default: 'Pending'
-    }
 }, { timestamps: true }); 
 
 const Order = mongoose.model("Order", orderSchema);

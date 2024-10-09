@@ -59,7 +59,8 @@
                                         <div class="panel-body">
                                             <ul class="brand-list">
                                                 <% brands.forEach(brand => { %>
-                                                    <li><a href="/shop/brand/<%= brand._id %>"><%= brand.name %></a></li>                                                <% }); %>
+                                                    <li><a href="/shop?brandSort=<%= brand._id %>"><%= brand.name %></a></li>                                               
+                                                <% }); %>
                                             </ul>
                                         </div>
                                     </div>

@@ -367,14 +367,34 @@ const orders = async (req,res) =>{
       if(req.session.user){
         
         const userId = req.session.user; 
-        const orders = await Order.find({ 'orderedItems.address': userId }) 
-          .populate('orderedItems.product')
-          .exec();
-    
-          console.log(orders)
-        // res.render('path/to/orderHistory', { orders, err_msg: null }); 
-  
-  
+        const user = await User.findById(userId)
+        const orders = await Order.find({})
+        .populate({ path: 'orderedItems.product', model: 'Product' })     
+        
+
+        const orderDetails = orders.map(order => {
+        return {
+          items: order.orderedItems.map(item => {
+           
+            const variant = item.product.variants.id(item.variantId);
+            
+            return {
+              productName: item.product.productName,
+              color:variant.color,
+              quantity: item.quantity,
+              productPrice: variant.price,
+              productImage : variant.images[0],
+              createdOn: variant.createdAt,
+              status: item.status
+            };
+          })
+        };
+      });
+
+      console.log('ORDERED DETAILS:', orderDetails[0]);
+
+
+        res.render('orders', { orderDetails, err_msg: null,user, url:req.originalUrl}); 
   
       }else{
         req.session.errorMessage = "Oops! It seems you need to log in again.";

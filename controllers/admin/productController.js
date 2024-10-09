@@ -210,9 +210,10 @@ const addVarient = async (req, res) => {
       images: uploadedImages,
       stock,
       price,
+      description
     });
     await product.save();
-    console.log("Variant Saved to product succefullyyyyy")
+    console.log("Variant Saved to product succefully")
     return res.redirect(`/admin/product-varient/${productId}`);
   } catch (error) {
     console.error("Error occurred in addVariant", error);
@@ -220,35 +221,12 @@ const addVarient = async (req, res) => {
   }
 };
 
-// Block Variant
-const blockVariant = async (req, res) => {
-  try {
-    const variantId = req.params.id; 
-    const productId = req.query.productId; 
-
-    const product = await Product.findOne({ _id: productId, 'variants._id': variantId });
-
-    if (!product) {
-      return res.redirect('/admin/product'); 
-    }
-    
-    await Product.updateOne(
-      { _id: productId, 'variants._id': variantId },
-      { $set: { 'variants.$.isActive': false } } 
-    );
-
-    res.redirect(`/admin/product-varient/${productId}`);
-  } catch (error) {
-    console.log('Error occurred in blockVariant:', error);
-    res.redirect('/admin/product');
-  }
-};
-
-// Unblock Variant
-const unblockVariant = async (req, res) => {
+// TOGLE VARIENT 
+const toggleVariant = async (req, res) => {
   try {
     const variantId = req.params.id; 
     const productId = req.query.productId;  
+    const isActive = req.query.isActive === 'true'; // Determine the desired state
 
     const product = await Product.findOne({ _id: productId, 'variants._id': variantId });
 
@@ -258,12 +236,12 @@ const unblockVariant = async (req, res) => {
 
     await Product.updateOne(
       { _id: productId, 'variants._id': variantId },
-      { $set: { 'variants.$.isActive': true } } 
+      { $set: { 'variants.$.isActive': isActive } } 
     );
 
     res.redirect(`/admin/product-varient/${productId}`);
   } catch (error) {
-    console.error('Error occurred in unblockVariant:', error);
+    console.error('Error occurred in toggleVariant:', error);
     res.redirect('/admin/product');
   }
 };
@@ -346,8 +324,7 @@ module.exports = {
   productUpdate,
   loadVariant,
   addVarient,
-  blockVariant,
-  unblockVariant,
+  toggleVariant,
   deleteVariant,
   editVariant
 };

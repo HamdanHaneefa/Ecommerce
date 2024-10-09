@@ -1,125 +1,61 @@
 <%- include("../../views/partials/user/header") %>
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f8f9fa;
-    }
-
-    .order-card {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        padding: 1rem;
-    }
-
-    .order-table {
-        font-size: 0.85rem;
-        width: 100%;
-        border-collapse: collapse;
-        overflow-x: auto;
-        display: block;
-    }
-
-    .order-table th,
-    .order-table td {
-        padding: 0.5rem;
-        vertical-align: middle;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    .order-table th {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    .product-details {
-        text-align: left;
-        padding: 0;
-        margin: 0;
-    }
-
-    .order-list {
-        margin: 0;
-    }
-
-    @media (max-width: 768px) {
-        .order-table th,
-        .order-table td {
-            font-size: 0.75rem;
-            white-space: nowrap;
-        }
-        .order-table {
-            display: block;
-            overflow-x: auto;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .order-table th,
-        .order-table td {
-            font-size: 0.65rem;
-        }
-    }
-</style>
 
 <div class="container-fluid">
     <div class="row">
         <%- include("../../views/partials/user/sidebar") %>
-
+ 
         <div class="col-md-9 mt-4">
             <h2 class="profile-page-title mb-4">Order History</h2>
 
-            <% if (err_msg && err_msg.length > 0) { %> 
-                <div class="alert alert-custom-danger">
-                    <strong>Error:</strong> <%= err_msg[0] %>
-                    <button type="button" class="close" onclick="this.parentElement.style.display='none';">&times;</button>
-                </div> 
-            <% } %>
+            <!-- Continue Shopping Button -->
+            <div class="text-left mb-3">
+                <a href="/shop" class="btn btn-outline-secondary py-2 px-3">Continue Shopping</a>
+            </div>
 
             <div class="order-list">
-                <% if (orders.length > 0) { %>
-                    <div class="bg-light rounded h-100 p-4">
-                        <h6 class="mb-4">Order History</h6>
-                        <table class="table order-table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Order ID</th>
-                                    <th scope="col">Order Date</th>
-                                    <th scope="col">Shipping Address</th>
-                                    <th scope="col">Payment Method</th>
-                                    <th scope="col">Grand Total</th>
-                                    <th scope="col">Order Status</th>
-                                    <th scope="col">Product Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% orders.forEach(order => { %>
-                                    <tr>
-                                        <td><%= order.orderId %></td>
-                                        <td><%= order.createdAt.toLocaleDateString() %></td>
-                                        <td><%= order.orderedItems[0].address %></td>
-                                        <td><%= order.paymentMethod || 'Not specified' %></td>
-                                        <td>₹<%= order.totalAmount %></td>
-                                        <td><%= order.orderStatus %></td>
-                                        <td class="product-details">
-                                            <ul class="list-unstyled mb-0">
-                                                <% order.orderedItems.forEach(item => { %>
-                                                    <li>
-                                                        <%= item.quantity %> x <%= item.product.productName %> - ₹<%= item.price %>
-                                                    </li>
-                                                <% }); %>
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                <% }); %>
-                            </tbody>
-                        </table>
+                <% if (orderDetails.length === 0) { %>
+                    <div class="no-orders">
+                        <p>Your order history is empty. No orders found.</p>
                     </div>
                 <% } else { %>
-                    <div class="alert alert-warning">No orders found.</div>
+                    <% orderDetails.forEach((order) => { %>
+                        <% order.items.forEach((item) => { %>
+                            <div class="order-card d-flex align-items-start mb-1 p-2">
+                                <!-- Product Image -->
+                                <div class="product-image">
+                                    <a href="#">
+                                        <img src="/uploads/variant-images/<%= item.productImage %>" alt="No image">
+                                    </a>
+                                </div>
+
+                                <!-- Order Details -->
+                                <div class="order-details d-flex justify-content-between w-100">
+                                    <!-- Product Info -->
+                                    <div>
+                                        <h5><%= item.productName %></h5>
+                                        <p class="mb-1">Color: <%= item.color %></p>
+                                    </div>
+
+                                    <!-- Order Info (Price, Date, Status) -->
+                                    <div class="order-info d-flex align-items-center">
+                                        <div class="order-item-count">
+                                            <%= item.quantity %> Item<%= item.quantity > 1 ? 's' : '' %>
+                                        </div>
+                                        <div class="order-price mx-3">
+                                            ₹<%= item.productPrice %>
+                                        </div>
+                                        <div class="order-date">
+                                            Ordered on: <%= new Date(item.createdOn).toLocaleDateString() %>
+                                        </div>
+                                        <div class="order-status mx-3 <%= item.status === 'Cancelled' ? 'text-danger' : 'text-success' %>">
+                                            Status: <%= item.status %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% }); %>
                 <% } %>
             </div>
         </div>
