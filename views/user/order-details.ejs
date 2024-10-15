@@ -1,5 +1,238 @@
 <%- include("../../views/partials/user/header") %>
+<style>
+    body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f0f4f8;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container-fluid {
+        padding: 2rem;
+    }
+
+    h2 {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-info {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Increased shadow */
+    }
+
+    .product-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Increased shadow */
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        margin-right: 15px;
+    }
+
+    .product-details {
+        flex-grow: 1;
+        padding-left: 15px;
+    }
+
+    .product-details h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .product-details p {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #000;
+    }
+
+    .return-status {
+        margin-top: 0.5rem;
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .summary-card {
+        padding: 1rem;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Increased shadow */
+    }
+
+    .summary-card h6 {
+        font-weight: bold;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .back-btn, .download-btn {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-align: center;
+        text-decoration: none;
+        margin-top: 1rem; /* Margin for top spacing */
+    }
+
+    .back-btn {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .back-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .download-btn {
+        background-color: #225566; /* Changed color to #225566 */
+        color: #fff;
+        float: right; /* Align to the right */
+    }
+
+    .download-btn:hover {
+        background-color: #1d4f54; /* Darker shade for hover effect */
+    }
+
+    .shipping-address {
+        white-space: pre-line; /* Allows line breaks */
+    }
+
+    /* SUMMARY CARD  */
+    .summary-card {
+        background: #f9f9f9; /* Light background for the card */
+        padding: 15px; /* Reduced padding for a more compact look */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Increased shadow */
+    }
+
+    .summary-item {
+        margin-bottom: 5px; /* Reduced space between items */
+        font-size: 14px; /* Slightly smaller font size */
+    }
+
+    .summary-item strong {
+        color: #333; /* Dark color for labels */
+    }
+
+    .price {
+        color: #e74c3c; /* Red color for price */
+        font-weight: bold; /* Bold font */
+    }
+
+    .quantity,
+    .payment-method {
+        color: #555; /* Slightly lighter color for other details */
+    }
+
+    .shipping-charges {
+        color: #555; /* Default color for shipping charges */
+    }
+
+    .free-shipping {
+        color: green; /* Green color for free shipping */
+        font-weight: bold; /* Bold font for emphasis */
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <%- include("../../views/partials/user/sidebar") %>
+
+        <div class="col-md-9 mt-4">
+            <h2>Order Details</h2>
+
+            <div class="order-info">
+                <p><strong>Order ID:</strong> <span><%= order._id %></span></p>
+                <p><strong>Ordered on:</strong> <span><%= new Date(order.createdAt).toLocaleDateString() %></span></p>
+            </div>
+
+            <!-- Product Cards -->
+            <% orderDetails.forEach(item => { %>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="/uploads/variant-images/<%= item.productImage %>" alt="<%= item.productName %>">
+                    </div>
+                    <div class="product-details">
+                        <h5><%= item.productName %></h5>
+                        <p>Price: <%= item.price %></p>
+                        <p>Color: <%= item.color %></p>
+                        <p>Quantity: <%= item.quantity %></p>
+                        <p>Status: <%= item.status %></p>
+                    </div>
+                    <div class="product-price">₹ <%= item.productPrice %></div>
+                </div>
+            <% }) %>
+
+            <!-- Order Summary -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h6>Shipping Address</h6>
+                    <div class="shipping-address">
+                        <%= addressDetail.name %>
+                        <%= addressDetail.street %>
+                        <%= addressDetail.state %>
+                        <%= addressDetail.country %>, <%= addressDetail.zipcode %>
+                        Phone: <%= addressDetail.phone %>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <h6>Order Summary</h6>
+                    <div class="summary-item">
+                        <strong>Total Price:</strong> <span class="price">₹ <%= order.totalAmount %></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Items:</strong> <span class="quantity"><%= order.orderedItems.length %></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Payment:</strong> <span class="payment-method"><%= order.paymentMethod %> </span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Shipping:</strong> <span class="shipping-charges free-shipping">Free</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="/orders" class="back-btn">Back to Orders</a>
+                <a href="#" class="download-btn">Download Invoice</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <%- include("../../views/partials/user/footer") %>

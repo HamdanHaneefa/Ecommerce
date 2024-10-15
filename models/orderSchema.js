@@ -4,16 +4,31 @@ const { v4: uuidv4 } = require('uuid');
 const Product = require('./productSchema');
 
 const orderSchema = new Schema({
-    orderId: {
+    orderId: { 
         type: String,
-        default: () => uuidv4(),
-        unique: true
+        default: uuidv4, 
+        unique: true,
+        required: true,
     },
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true 
     },
+    status: {
+        type: String,
+        required: true,
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned' ,'Cancelled']
+    },
+    address: {
+        type: Schema.Types.ObjectId,
+        ref: 'Address',
+        required: true
+    },
+    paymentMethod: {
+        type: String,
+        required: true  
+    },  
     orderedItems: [{
         product: {
             type: Schema.Types.ObjectId,
@@ -32,20 +47,6 @@ const orderSchema = new Schema({
         price: {
             type: Number,
             required: true  
-        },
-        address: {
-            type: Schema.Types.ObjectId,
-            ref: 'Address',
-            required: true
-        },
-        paymentMethod: {
-            type: String,
-            required: true  
-        },
-        status: {
-            type: String,
-            required: true,
-            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned']
         },
         createdOn: {
             type: Date,

@@ -5,40 +5,57 @@
         <div class="row">
             <!-- PRODUCTS DETAILS -->
             <div class="col-md-8 col-lg-10 order-md-last">
+                
+                <!-- SEARCH BAR -->
+                <div class="row mb-3" style="margin-top: -20px;"> 
+                    <div class="col-md-12">
+                        <form action="/shop" method="GET" class="form-inline">
+                            <input type="text" id="searchInput" name="query" class="form-control" placeholder="Search products..." style="width: 70%;" value="<%= query || '' %>">
+                            <button type="submit" class="btn btn-primary ml-2">Search</button>
+                        </form>                                          
+                    </div>
+                </div> 
+                <!-- END SEARCH BAR -->
+                
                 <div class="row">
-                    <% for (let i = 0; i < products.length; i++) { %> <!-- Loop through each product -->
-                        <div class="col-sm-12 col-md-12 col-lg-4 ftco-animate d-flex">
-                            <div class="product d-flex flex-column">
-                                <a href="/product/<%= products[i]._id %>" class="img-prod">
-                                    <img class="img-fluid" src="/uploads/product-images/<%= products[i].ProductImage %>" alt="<%= products[i].productName %>">
-                                    <div class="overlay"></div>
-                                </a>
-                                <div class="text py-3 pb-4 px-3">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="cat">
-                                            <span><%= products[i].brand %></span>
+                    <% if (products.length === 0) { %>
+                        <div class="col-12 text-center mt-5">
+                            <h2>No products exist</h2>
+                            <p>Sorry, we couldn't find any products matching your search criteria.</p>
+                        </div>
+                    <% } else { %> <!-- If products exist, display them -->
+                        <% products.forEach(product => { %> <!-- Loop through each product -->
+                            <div class="col-sm-12 col-md-12 col-lg-4 ftco-animate d-flex">
+                                <div class="product d-flex flex-column">
+                                    <a href="/product/<%= product._id %>" class="img-prod">
+                                        <img class="img-fluid" src="/uploads/product-images/<%= product.ProductImage %>" alt="<%= product.productName %>">
+                                        <div class="overlay"></div>
+                                    </a>
+                                    <div class="text py-3 pb-4 px-3">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="cat">
+                                                <span><%= product.brand.name %></span>
+                                            </div>
+                                            <div class="wishlist">
+                                                <a href="#" class="wishlist-button" title="Add to Wishlist">
+                                                    <span class="ion-ios-heart-outline"></span>
+                                                </a>
+                                            </div>
                                         </div>
-                                        <div class="wishlist">
-                                            <a href="#" class="wishlist-button" title="Add to Wishlist">
-                                                <span class="ion-ios-heart-outline"></span>
-                                            </a>
+                                        <h3><a href="#"><%= product.productName %></a></h3> 
+                                        <div class="pricing">
+                                            <p class="price">
+                                                <span class="price-sale">₹<%= product.price %></span> 
+                                            </p>
                                         </div>
+                                        <p class="bottom-area d-flex px-3"></p>
                                     </div>
-                                    <h3><a href="#"><%= products[i].productName %></a></h3> 
-                                    <div class="pricing">
-                                        <p class="price">
-                                            <span class="price-sale">₹<%= products[i].price %></span> 
-                                        </p>
-                                    </div>
-                                    <p class="bottom-area d-flex px-3">
-                                        <!-- <a href="#" class="add-to-cart text-center py-2 mr-1"><span>Add to cart <i class="ion-ios-add ml-1"></i></span></a>
-                                        <a href="#" class="buy-now text-center py-2">Buy now<span><i class="ion-ios-cart ml-1"></i></span></a> -->
-                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    <% } %> <!-- End product loop -->
+                        <% }); %> <!-- End product loop -->
+                    <% } %>
                 </div>
+                
             </div>
 
             <!-- CATEGORIES  -->
@@ -48,11 +65,15 @@
                         <h2 class="heading">Categories</h2>
                         <div class="fancy-collapse-panel">
                             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                <div class="panel-heading" role="tab" id="headingFour">
+                                    <h4 class="panel-title">
+                                        <a href="/shop?sort=default">Default</a>                        
+                                    </h4>
+                                </div>
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingOne">
                                         <h4 class="panel-title">
-                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Brand
-                                            </a>
+                                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Brand</a>
                                         </h4>
                                     </div>
                                     <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
@@ -68,16 +89,15 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingTwo">
                                         <h4 class="panel-title">
-                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Connection Type
-                                            </a>
+                                            <a class="collapsed" data-parent="#accordion" href="#collapseTwo" data-toggle="collapse" aria-expanded="false" aria-controls="collapseTwo">Connection Type</a>
                                         </h4>
                                     </div>
                                     <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                                         <div class="panel-body">
                                             <ul>
-                                                <li><a href="#">Wireless</a></li>
-                                                <li><a href="#">True Wireless</a></li>
-                                                <li><a href="#">Wired</a></li>
+                                                <li><a href="/shop?cSort=wireless">Wireless</a></li>
+                                                <li><a href="/shop?cSort=true-wireless">True Wireless</a></li>
+                                                <li><a href="/shop?cSort=wired">Wired</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -85,16 +105,15 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingThree">
                                         <h4 class="panel-title">
-                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Type
-                                            </a>
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Type</a>
                                         </h4>
                                     </div>
                                     <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                                         <div class="panel-body">
                                             <ul>
-                                                <li><a href="#">In-Ear</a></li>
-                                                <li><a href="#">On-Ear</a></li>
-                                                <li><a href="#">Over-Ear</a></li>
+                                                <li><a href="/shop?tSort=in-ear">In-Ear</a></li>
+                                                <li><a href="/shop?tSort=on-ear">On-Ear</a></li>
+                                                <li><a href="/shop?tSort=over-ear">Over-Ear</a></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -102,14 +121,12 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading" role="tab" id="headingFour">
                                         <h4 class="panel-title">
-                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">Price and Others
-                                            </a>
+                                            <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">Price and Others</a>
                                         </h4>
                                     </div>
                                     <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
                                         <div class="panel-body">
                                             <ul class="filter-list">
-                                                <li><a href="/shop?sort=default">Default</a></li>
                                                 <li><a href="/shop?sort=priceHigh">High to Low</a></li>
                                                 <li><a href="/shop?sort=priceLow">Low to High</a></li>
                                                 <li><a href="/shop?sort=newArrivals">New Arrivals</a></li>
@@ -122,6 +139,8 @@
                             </div>
                         </div>
                     </div>
+
+                  
                 </div>
             </div>
         </div>

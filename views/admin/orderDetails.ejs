@@ -1,0 +1,259 @@
+<%- include("../../views/partials/admin/header") %>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 15px;
+    }
+
+    h2 {
+        text-align: center;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: black;
+        margin-bottom: 30px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+
+    .shipping-address {
+        margin-top: 20px;
+        line-height: 1.4;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+    }
+
+    hr {
+        border-top: 2px solid #ccc;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Update Button Styling */
+    .btn-update {
+        width: 100%;
+        background-color: #007bff;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-update:hover {
+        background-color: #0056b3;
+    }
+
+    /* Status Badge Styling */
+    .badge {
+        font-size: 0.9rem; /* Standard font size */
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: white; /* Default font color for shipped */
+    }
+
+    .badge-pending {
+        background-color: #ffc107; /* Yellow background for Pending */
+    }
+
+    .badge-shipped {
+        background-color: #007bff; /* Blue background for Shipped */
+    }
+
+    .badge-delivered {
+        background-color: #28a745; /* Green background for Delivered */
+    }
+
+    /* Order Status and Button Styling */
+    .order-status-section {
+        margin-top: 20px;
+    }
+
+    .order-status-label {
+        font-weight: bold;
+        margin-right: 15px;
+    }
+
+    .order-status-select {
+        width: 250px;
+        display: inline-block;
+        margin-right: 15px;
+    }
+
+    /* Update Status Button Styling */
+    .btn-update-status {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff; /* Primary button color */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-update-status:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        .btn-update {
+            margin-top: 10px;
+        }
+
+        .order-status-select {
+            width: 100%;
+        }
+    }
+    .error-message {
+    background-color: #fff3cd; /* Light yellow background */
+    color: #856404;            /* Dark yellowish text */
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 1rem;
+    border: 1px solid #ffeeba; /* Slightly darker yellow border */
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+}
+
+.error-message .info-icon {
+    margin-right: 10px; /* Adds space between icon and text */
+}
+
+.error-message img {
+    width: 20px; /* Set the width of the icon */
+    height: auto; /* Maintain aspect ratio */
+}
+
+</style>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Order Details</h2>
+
+    <!-- Items Ordered Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            Items Ordered
+        </div>
+        <div class="card-body">
+            <!-- Ordered Items Table -->
+            <table class="table table-responsive">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Name</th>
+                        <th>Status</th> 
+                        <th>Quantity</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orderDetails.forEach(orderDetail => { %>
+                    <tr>
+                        <td>
+                            <img src="/uploads/variant-images/<%= orderDetail.productImage %>" alt="<%= orderDetail.productName %>" width="50">
+                        </td>
+                        <td><%= orderDetail.productName %></td>
+                        <td>
+                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : 'badge-pending' %>">
+                                <%= order.status %>
+                            </span>
+                        </td> <!-- Status Field -->
+                        <td><%= orderDetail.quantity %></td>
+                        <td><%= orderDetail.productPrice %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+
+            <!-- Order Status and Update Button -->
+            <% if (!errorMessage) { %>
+                <div class="order-status-section mt-4">
+                    <label for="order-status" class="order-status-label">Update Order Status:</label>
+                    <select id="order-status" class="form-select order-status-select">
+                        <option value="pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                        <option value="delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                    </select>
+                    <button id="btn-update-status" class="btn-update-status mt-2">Update Status</button>
+                </div>
+            <% } else { %>
+                    <div class="error-message mt-4">
+                        <i class="info-icon"><img src="/admin/img/warning-exclamation.svg" alt="Warning Icon"></i>
+                        You can't update the status once it is&nbsp;<strong>Returned</strong>.
+                    </div>                             
+            <% } %>                      
+        </div>
+    </div>
+
+    <!-- Order Information Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            Order Information
+        </div>
+        <div class="card-body row">
+            <div class="col-md-6 mb-3">
+                <p class="mb-1"><strong>Order ID:</strong> <%= order._id %></p>
+                <p class="mb-1"><strong>Customer Name:</strong> <%= user.name %></p>
+                <p class="mb-1"><strong>Email:</strong> <%= user.email %></p>
+                <p class="mb-1"><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <p class="mb-1"><strong>Order Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                <p class="mb-1"><strong>No of Products:</strong> <%= order.orderedItems.length %></p>
+                <p class="mb-1"><strong>Total Amount:</strong> <%= order.totalAmount %></p>
+            </div>
+        </div>
+
+        <!-- Shipping Address Section -->
+        <hr class="my-3">
+        <div class="shipping-address">
+            <h5>Shipping Address</h5>
+            <p class="mb-1"><%= addressDetail.name %></p>
+            <p class="mb-1"><%= addressDetail.street %></p>
+            <p class="mb-1"><%= addressDetail.state %></p>
+            <p class="mb-1"><%= addressDetail.country %>, <%= addressDetail.zipcode %></p>
+            <p class="mb-1">Phone: <%= addressDetail.phone %></p>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#btn-update-status').on('click', function() {
+            const orderId = '<%= order._id %>';
+            const selectedStatus = $('#order-status').val();
+            console.log(selectedStatus);
+
+            $.ajax({
+                url: '/admin/update-status', 
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ orderId, status: selectedStatus }),
+                success: function(response) {
+                    window.location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.log(error);
+                    toastr.error(xhr.responseJSON.message || 'Error updating order status.');
+                }
+            });
+        });
+    });
+</script>
+
+
+<%- include("../../views/partials/admin/footer") %>

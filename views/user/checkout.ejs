@@ -37,7 +37,7 @@
                             <div class="col-md-12">
                                 <div class="radio">
                                     <label style="font-size: 0.85rem;">
-                                        <input type="radio" name="paymentMethod" value="COD" class="mr-2" required> Cash On Delivery
+                                        <input type="radio" name="paymentMethod" value="Cash On Delivery" class="mr-2" required> Cash On Delivery
                                     </label>
                                 </div>
                             </div>
@@ -46,7 +46,7 @@
                             <div class="col-md-12">
                                 <div class="radio">
                                     <label style="font-size: 0.85rem;">
-                                        <input type="radio" name="paymentMethod" value="razorpay" class="mr-2" required> Razorpay
+                                        <input type="radio" name="paymentMethod" value="Razorpay" class="mr-2" required> Razorpay
                                     </label>
                                 </div>
                             </div>
@@ -174,7 +174,7 @@
             },
             error: function(xhr, status, error) {
                 console.error('Error placing order:', error);
-                toastr.error( xhr.responseText || error, "Error");
+                toastr.error( xhr.responseJSON.message || error, "Error");
             }
         });
 

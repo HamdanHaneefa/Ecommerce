@@ -54,7 +54,7 @@ router.post('/profile/delete',profileController.deleteImage)
 router.get('/address',profileController.loadAddress)
 router.get('/address/add-address',profileController.loadAddAddress)
 router.post('/address/add-address',profileController.addAddress)
-router.get('/address/:id/remove',profileController.removeAddress)
+router.delete('/address/:id/remove', profileController.removeAddress);
 router.post('/address/:id/edit',profileController.editAddress)
 
 //ADD TO CART
@@ -73,7 +73,8 @@ router.post('/cart/checkout/place-order',shopController.placeOrder)
 
 //ORDERS
 router.get('/orders',profileController.orders)
-
+router.post('/cancel-order',profileController.cancelOrder)
+router.get('/order/details/:id',profileController.orderDetails)
 
 
 module.exports = router 

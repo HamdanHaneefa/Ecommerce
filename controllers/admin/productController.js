@@ -4,6 +4,7 @@ const User = require("../../models/userSchema");
 const Cart = require('../../models/cartSchema');
 const fs = require("fs");
 const path = require("path");
+const { error } = require("console");
 
 
 // Product Information
@@ -42,6 +43,16 @@ const addProducts = async (req, res) => {
     
     if (productExist) {
       req.flash('error_msg', 'Product Already Exists');
+      return res.redirect('/admin/addProducts');
+    }
+
+    if (isNaN(price) || Number(price) <= 0) {
+      req.flash('error_msg', 'Price must be a number greater than zero.');
+      return res.redirect('/admin/addProducts');
+    }
+
+    if (isNaN(stock) || Number(stock) <= 0) {
+      req.flash('error_msg', 'Stock must be a number greater than zero.');
       return res.redirect('/admin/addProducts');
     }
 
@@ -131,6 +142,22 @@ const deleteProduct = async (req, res) => {
 const productUpdate = async (req, res) => {
   try {
     const { productName, brand, type, connectionType, price, stock, description } = req.body;
+
+    if (!productName || !brand || !type || !connectionType || !price || !stock || !description) {
+      req.flash('error_msg', 'All fields are required.');
+      return res.redirect(`/admin/editProduct/${req.params.id}`);
+    }
+
+    if (isNaN(price) || Number(price) <= 0) {
+      req.flash('error_msg', 'Price must be a number greater than zero.');
+      return res.redirect(`/admin/editProduct/${req.params.id}`);
+    }
+
+    if (isNaN(stock) || Number(stock) <= 0) {
+      req.flash('error_msg', 'Stock must be a number greater than zero.');
+      return res.redirect(`/admin/editProduct/${req.params.id}`);
+    }
+
     await Product.findByIdAndUpdate(req.params.id, {
       productName,
       brand,
@@ -140,12 +167,17 @@ const productUpdate = async (req, res) => {
       stock,
       description,
     });
+
+    req.flash('success_msg', 'Product updated successfully.');
     res.redirect('/admin/product');
+
   } catch (error) {
-    console.log("Error happened in update Product", error);
+    console.log("Error occurred while updating the product:", error);
+    req.flash('error_msg', 'An error occurred while updating the product.');
     res.redirect('/admin/product');
   }
 };
+
 
 // Load Variant
 const loadVariant = async (req, res) => {
@@ -177,9 +209,22 @@ const addVarient = async (req, res) => {
 
     const product = await Product.findById(productId);
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      req.flash('error_msg', 'Missing required product details');
+      return res.redirect('/admin/product-varient/' + productId)
     }
 
+    if (isNaN(price) || Number(price) <= 0) {
+      console.log("PRICE ERROR")
+      req.flash('error_msg', 'Price must be a number greater than zero.');
+      return res.redirect('/admin/product-varient/' + productId);
+    }
+
+    if (isNaN(stock) || Number(stock) < 0) {
+      console.log("STOCK ERROR")
+      req.flash('error_msg', 'Stock must be a non-negative number.');
+      return res.redirect('/admin/product-varient/' + productId);
+    }
+    
     const uploadedImages = [];
     if (req.files && req.files.length > 0) {
       const uploadDir = path.join(__dirname, '../../public/uploads/variant-images');
@@ -226,7 +271,7 @@ const toggleVariant = async (req, res) => {
   try {
     const variantId = req.params.id; 
     const productId = req.query.productId;  
-    const isActive = req.query.isActive === 'true'; // Determine the desired state
+    const isActive = req.query.isActive === 'true'; 
 
     const product = await Product.findOne({ _id: productId, 'variants._id': variantId });
 
@@ -273,13 +318,30 @@ const deleteVariant = async (req, res) => {
 const editVariant = async (req, res) => {
   const { variantId, productId, color, price, stock, isActive } = req.body;
   try {
-    if (!variantId || !productId) {
-      return res.redirect('/admin/product?error=Missing Product or Variant ID');
+    if (!variantId || !productId || !color || !price || stock === undefined || isActive === undefined) {
+      req.flash('error_msg', 'Missing required fields');
+      return res.redirect(`/admin/product-varient/${productId}`);
     }
     const product = await Product.findOne({ _id: productId, 'variants._id': variantId });
+    
     if (!product) {
-      return res.redirect(`/admin/product/${productId}?error=Product or variant not found`);
+      req.flash('error_msg', 'Product or variant not found');
+      return res.redirect(`/admin/product-varient/${productId}`);
     }
+
+    
+    if (isNaN(price) || Number(price) <= 0) {
+      console.log("PRICE ERROR")
+      req.flash('error_msg', 'Price must be a number greater than zero.');
+      return res.redirect('/admin/product-varient/' + productId);
+    }
+
+    if (isNaN(stock) || Number(stock) < 0) {
+      console.log("STOCK ERROR")
+      req.flash('error_msg', 'Stock must be a non-negative number.');
+      return res.redirect('/admin/product-varient/' + productId);
+    }
+
     await Product.updateOne(
       { _id: productId, 'variants._id': variantId },
       {

@@ -5,6 +5,7 @@ const authController = require('../controllers/admin/authController')
 const customerController = require('../controllers/admin/customerController')
 const categoryController = require('../controllers/admin/categoryController')
 const productController = require('../controllers/admin/productController')
+const orderController = require('../controllers/admin/orderController');
 const {userAuth,adminAuth} = require('../middlewares/auth')
 const {upload} = require('../helpers/multers')
 
@@ -52,6 +53,12 @@ router.post('/product-varient/:id',adminAuth,upload.array('variantImages'),produ
 router.get('/toggleVariant/:id', adminAuth, productController.toggleVariant);
 router.get('/deleteVariant/:id',adminAuth,productController.deleteVariant)
 router.post('/updateVariant',adminAuth,productController.editVariant)
+
+
+//ORDERS
+router.get('/orders', adminAuth,orderController.loadOrders);
+router.get('/order-details/:id',adminAuth,orderController.orderDetails);
+router.post('/update-status',adminAuth,orderController.changeStatus)
 
 
 

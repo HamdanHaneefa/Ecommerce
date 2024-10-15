@@ -8,39 +8,66 @@ const Brand = require('../../models/brandSchema')
 
 const loadShop = async (req, res) => {
   try {
-      const { sort ,brandSort } = req.query;
-     
-      let products = await Product.find({ isActive: true }).populate('brand'); 
-    
+      const query = req.query.query;
+      const { sort , brandSort , cSort , tSort } = req.query;
+      let products = await Product.find({isActive:true});
+
+      // BRAND SORTING
+      if(brandSort){
+        let brand = await Brand.findById(brandSort)
+        products = await Product.find({brand:brand.name}) 
+      }
+
+      // CONNECTION SORTING
+      if(cSort){
+        products = await Product.find({connectionType:cSort})
+      }
+
+      // TYPE SORTING
+      if(tSort){
+        products = await Product.find({type:tSort})
+      }
+
+      // SEARCHING
+      const searchRegex = new RegExp(query, 'i');
+      if (query) {
+          products = await Product.find({
+              $or: [
+                  { productName: { $regex: searchRegex } },
+                  { 'brand.name': { $regex: searchRegex } },
+                  { 'variants.description': { $regex: searchRegex } }
+              ]
+          }).populate('brand');
+      }
+
+      // PRICE AND OTHERS
       if (sort === 'priceHigh') {
-          products.sort((a, b) => b.price - a.price); 
+          products.sort((a, b) => b.price - a.price);
       } else if (sort === 'priceLow') {
-          products.sort((a, b) => a.price - b.price); 
+          products.sort((a, b) => a.price - b.price);
       } else if (sort === 'newArrivals') {
           products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       } else if (sort === 'aToZ') {
-          products.sort((a, b) => a.productName.localeCompare(b.productName)); 
+          products.sort((a, b) => a.productName.localeCompare(b.productName));
       } else if (sort === 'zToA') {
-          products.sort((a, b) => b.productName.localeCompare(a.productName)); 
-      } else if (sort === 'default'){
-        res.redirect('/shop');
-        return; 
+          products.sort((a, b) => b.productName.localeCompare(a.productName));
+      } else if (sort === 'default') {
+          res.redirect('/shop');
+          return;
       }
 
       const brands = await Brand.find({ isActive: true });
-      let user = null;
-      if (req.session.user) {
-          const userId = req.session.user;
-          user = await User.findById(userId);
-      }
+      let user = req.session.user ? await User.findById(req.session.user) : null;
 
-      res.render("shop", { products, user, brands });
-      
+      console.log('FILTERED PRODUCTS',products)
+      res.render("shop", { products, user, brands , query});
+
   } catch (error) {
       console.error("Error occurred in loadShop:", error);
       res.redirect("/");
   }
 };
+
 
 const productInfo = async (req, res) => {
   try {
@@ -422,7 +449,7 @@ const placeOrder = async (req, res) => {
     }
 
     const cartItems = await Cart.findOne({ userId }).populate('items.productId');
-
+ 
     if (!cartItems || !cartItems.items.length) {
       return res.status(404).json({ success: false, message: "No items in the cart." });
     }
@@ -437,10 +464,15 @@ const placeOrder = async (req, res) => {
       }
 
       const variant = product.variants.id(item.variantId);
-
+  
       if (!variant) {
         return res.status(404).json({ success: false, message: `Variant not found for product ${product.productName}.` });
       }
+      
+      if (!variant.isActive) {
+        return res.status(404).json({ success: false, message: `Variant not found or inactive for product.` });
+    }
+    
 
       if (item.quantity > variant.stock) {
         return res.status(400).json({ success: false, message: `Insufficient stock for ${product.productName}.` });
@@ -454,9 +486,6 @@ const placeOrder = async (req, res) => {
         variantId: variant._id,
         quantity: item.quantity,
         price: variant.price,
-        address: addressId,
-        paymentMethod:paymentMethod,
-        status: 'Pending',
         createdOn: new Date(),
         couponApplied: false,
       });
@@ -464,6 +493,9 @@ const placeOrder = async (req, res) => {
 
     const order = new Order({
       userId,
+      status: 'Pending',
+      address: addressId,
+      paymentMethod:paymentMethod,
       orderedItems,
       totalAmount: cartItems.cartTotal,
       orderStatus: 'Pending',

@@ -28,23 +28,16 @@ const loadProfile = async (req,res) =>{
 
 const updateProfile = async (req, res) => {
     try {
-        const { name, email, phone } = req.body;
+        const { name, phone } = req.body;
         const userId = req.session.user;
 
         // Validation Patterns
         const namePattern = /^[a-zA-Z\s]+$/;
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const phonePattern = /^[0-9]{10}$/;
 
         // Validate Name
         if (!namePattern.test(name)) {
             req.flash('err_msg', 'Invalid name. Only letters and spaces are allowed.');
-            return res.redirect('/profile');
-        }
-
-        // Validate Email
-        if (!emailPattern.test(email)) {
-            req.flash('err_msg', 'Invalid email format.');
             return res.redirect('/profile');
         }
 
@@ -56,7 +49,6 @@ const updateProfile = async (req, res) => {
 
         const user = await User.findById(userId);
         user.name = name;
-        user.email = email;
         user.phone = phone;
 
         if (req.file) {
@@ -128,6 +120,9 @@ const LoadChangePassword = async (req,res) =>{
 
 const changePassword = async (req, res) => {
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
+    
+    const passPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
     try {
         if (req.session.user) {
             const userId = req.session.user;
@@ -144,13 +139,17 @@ const changePassword = async (req, res) => {
                 return res.redirect("/profile/change-password");
             }
 
+            if (!passPattern.test(newPassword)) {
+                req.flash("err_msg", "Password must be at least 8 characters long, including one letter and one number.");
+                return res.redirect("/profile/change-password");
+            }
+
             if (newPassword !== confirmNewPassword) {
                 req.flash("err_msg", "New password and confirm password do not match");
                 return res.redirect("/profile/change-password");
             }
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
-
             user.password = hashedPassword;
             await user.save();
 
@@ -166,6 +165,7 @@ const changePassword = async (req, res) => {
         res.redirect('/profile/change-password');
     }
 };
+
 
 
 //ADDRESS
@@ -276,26 +276,28 @@ const addAddress = async (req, res) => {
 const removeAddress = async (req, res) => {
     try {
         if (req.session.user) {
-            const addressId = req.params.id; 
+            const addressId = req.params.id;
             const userId = req.session.user;
 
             const result = await Address.updateOne(
                 { userId: userId },
-                { $pull: { addresses: { _id: addressId } } } 
+                { $pull: { addresses: { _id: addressId } } }
             );
 
             if (result.modifiedCount === 0) {
                 return res.status(404).send("Address not found or already removed");
             }
-            res.redirect('/address');
+
+            res.status(200).json({ message: 'Address removed successfully' });
         } else {
-            res.redirect('/');
+            res.status(401).json({ message: 'Unauthorized' });
         }
     } catch (error) {
         console.log("Error occurred in deleteAddressById", error);
-        res.redirect('/address');
+        res.status(500).json({ message: 'Server error' });
     }
-}
+};
+
 
 const editAddress = async (req, res) => {
     try {
@@ -370,31 +372,9 @@ const orders = async (req,res) =>{
         const user = await User.findById(userId)
         const orders = await Order.find({})
         .populate({ path: 'orderedItems.product', model: 'Product' })     
-        
+        console.log(orders)
 
-        const orderDetails = orders.map(order => {
-        return {
-          items: order.orderedItems.map(item => {
-           
-            const variant = item.product.variants.id(item.variantId);
-            
-            return {
-              productName: item.product.productName,
-              color:variant.color,
-              quantity: item.quantity,
-              productPrice: variant.price,
-              productImage : variant.images[0],
-              createdOn: variant.createdAt,
-              status: item.status
-            };
-          })
-        };
-      });
-
-      console.log('ORDERED DETAILS:', orderDetails[0]);
-
-
-        res.render('orders', { orderDetails, err_msg: null,user, url:req.originalUrl}); 
+        res.render('orders', { orders, err_msg: null,user, url:req.originalUrl}); 
   
       }else{
         req.session.errorMessage = "Oops! It seems you need to log in again.";
@@ -405,6 +385,78 @@ const orders = async (req,res) =>{
       res.redirect('/')
     }
   }
+
+
+  const orderDetails = async (req, res) => {
+    try {
+        if (req.session.user) {
+            const user = await User.findById(req.session.user);
+            const orderId = req.params.id;
+
+            const order = await Order.findById(orderId)
+            .populate({ path: 'orderedItems.product', model: 'Product' })
+            
+            const address = await Address.findOne({userId:order.userId})
+            const addressDetail = address.addresses.id(order.address)
+
+            if (!order || order.status === 'Cancelled') {
+                req.session.errorMessage = "Order not found.";
+                return res.redirect('/orders');
+            }
+            
+            const orderDetails = order.orderedItems.map(item => {
+                const variant = item.product.variants.id(item.variantId); 
+                return {
+                    orderId: order._id,
+                    productName: item.product.productName,
+                    price: variant.price,
+                    color: variant.color,
+                    quantity: item.quantity,
+                    productPrice: variant.price*item.quantity,
+                    productImage: variant.images[0], 
+                    createdOn: variant.createdAt,
+                    status: order.status,
+                    productId:item._id
+                };
+            });
+
+            console.log('ORDER DETAILS : ',orderDetails);
+
+            res.render('order-details', {    
+                user, 
+                orderDetails,
+                addressDetail,
+                order,  
+                orderId,
+                url: req.originalUrl
+            });
+
+        } else {
+            req.session.errorMessage = "Oops! It seems you need to log in again.";
+            res.redirect('/');
+        }
+    } catch (error) {
+        console.log("Error occurred in orderDetails", error);
+        res.redirect('/orders');
+    }
+};
+
+const cancelOrder = async (req,res) =>{
+    try {
+        if(req.session.user){
+            const {orderId} = req.body
+            const order = await Order.findById(orderId)
+            order.status = 'Cancelled';
+            order.save();
+            return res.json({success:true});  
+        }else{
+            res.redirect('/')
+        }
+    } catch (error) {
+        console.log("Error occured in cancelOrder",error)
+        res.redirect('/orders')
+    }
+}
 
 
 
@@ -419,5 +471,7 @@ module.exports ={
     removeAddress,
     editAddress,
     deleteImage,
-    orders
+    orders,
+    orderDetails,
+    cancelOrder
 }

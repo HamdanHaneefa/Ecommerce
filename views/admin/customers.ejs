@@ -94,9 +94,7 @@
 <!-- Add JavaScript -->
 <script>
   $(document).ready(function() {
-      // Use event delegation to handle click events on dynamically loaded rows
       $('#table').on('click', '.user-row', function(e) {
-          // Check if the clicked element is a link or inside the activation button
           if (!$(e.target).closest('.btn-group').length) {
               var userId = $(this).data('id');
               var userName = $(this).data('name');
@@ -118,8 +116,6 @@
 </script>
 
   <!-- DataTable -->
-
-<!-- DataTable Initialization Script -->
 <script>
     $(document).ready(function() {
         var table = $('#table').DataTable({
