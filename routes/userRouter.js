@@ -43,12 +43,19 @@ router.get('/shop',shopController.loadShop)
 router.get('/product/:id',shopController.productInfo)
 
 
+//WISHLIST
+router.get('/wishlist',shopController.loadWishlist)
+router.delete('/wishlist/remove/:id',shopController.deleteWishlist)
+router.post('/wishlist/toggle',shopController.toggleWishlist)
+
+
 //PROFILE
 router.get('/profile',profileController.loadProfile)
 router.post('/profile/update',upload.single('profileImage'),profileController.updateProfile)
 router.get('/profile/change-password', profileController.LoadChangePassword);
 router.post('/profile/change-password', profileController.changePassword);
 router.post('/profile/delete',profileController.deleteImage)
+
 
 //ADDRESS
 router.get('/address',profileController.loadAddress)
@@ -57,8 +64,8 @@ router.post('/address/add-address',profileController.addAddress)
 router.delete('/address/:id/remove', profileController.removeAddress);
 router.post('/address/:id/edit',profileController.editAddress)
 
-//ADD TO CART
 
+//ADD TO CART
 router.get('/cart',shopController.loadCart)
 router.post('/cart/add',shopController.addCart)
 router.get('/cart/remove/:id',shopController.deleteProduct)
@@ -69,12 +76,22 @@ router.post('/updateQuantity',shopController.updateQuantity)
 router.get('/cart/checkout',shopController.checkout)
 router.post('/cart/add-address',shopController.addCartAddress)
 router.post('/cart/checkout/place-order',shopController.placeOrder)
-
+router.post('/cart/checkout/verify-payment', shopController.verifyPayment)
 
 //ORDERS
 router.get('/orders',profileController.orders)
-router.post('/cancel-order',profileController.cancelOrder)
+router.post('/return-order',profileController.returnOrder)
 router.get('/order/details/:id',profileController.orderDetails)
+ 
+
+//COUPON
+router.get('/coupons',profileController.loadCoupon)
+router.post('/apply-coupon',profileController.applyCoupon)
+router.delete('/delete-coupon',profileController.deleteCoupon)
+
+//WALLET
+router.get('/wallet',profileController.loadWallet)
+
 
 
 module.exports = router 

@@ -1,0 +1,134 @@
+<%- include("../../views/partials/user/header") %>
+
+<section class="ftco-section ftco-cart" style="background-color: white;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 ftco-animate">
+                <!-- Continue Shopping Button -->
+                <div class="text-left mb-3">
+                    <a href="/shop" class="btn btn-outline-secondary py-2 px-3">Continue Shopping</a>
+                </div>
+
+                <!-- Wishlist List Table -->
+                <div class="wishlist-list">
+                    <table class="table">
+                        <thead class="thead-primary">
+                            <tr class="text-center">
+                                <th>&nbsp;</th>
+                                <th>Image</th>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (wishlist && wishlist.length > 0) { %>
+                                <% wishlist.forEach(item => { %>
+                                    <tr class="text-center">
+                                        <!-- Remove button -->
+                                        <td class="product-remove">
+                                            <a href="javascript:void(0);" onclick="removeFromWishlist('<%= item.product._id %>', '<%= item.variant?._id %>')">
+                                                <span class="ion-ios-close"></span>
+                                            </a>
+                                        </td>                                 
+
+                                        <!-- Product image -->
+                                        <td class="image-prod">
+                                            <a href="/product/<%= item.product._id %>">
+                                                <img src="/uploads/variant-images/<%= item.variant?.images[0] || 'uploads/placeholder.jpg' %>" 
+                                                    alt="<%= item.product.name %>" 
+                                                    style="height: 100px; width: 100px; object-fit: cover;">
+                                            </a>
+                                        </td>
+
+                                        <!-- Product name and description -->
+                                        <td class="product-name">
+                                            <h3><%= item.product.name %></h3>
+                                            <p><%= item.product.description %></p>
+                                        </td>
+
+                                        <!-- Price of the variant -->
+                                        <td class="price">₹<%= item.variant?.price || item.product.price %></td>
+
+                                        <!-- Action to add to cart -->
+                                        <td class="action">
+                                            <a href="javascript:void(0);"class="btn btn-primary" 
+                                               onclick="addToCart('<%= item.product._id %>', '<%= item.variant ? item.variant._id :null %>')">
+                                                Add to Cart
+                                            </a>
+                                        </td>
+                                        
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <!-- Show this if wishlist is empty -->
+                                <tr>
+                                    <td colspan="5" class="text-center">Your wishlist is empty</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // Deletion 
+    function removeFromWishlist(productId, variantId) {
+        axios.delete(`/wishlist/remove/${productId}`, { data: { variantId } })
+            .then(response => {
+                if (response.data.success) {
+                    toastr.success(response.data.message);
+                    window.location.reload();
+                } else {
+                    toastr.error("Could not remove item from wishlist");
+                }
+            })
+            .catch(error => {
+                console.error("Error removing item from wishlist:", error);
+                toastr.error("An error occurred. Please try again.");
+            });
+    }
+
+    // ADD TO CART 
+    function addToCart(productId, variantId) {
+        const data = {
+            productId: productId,  
+            variantId: variantId || null,
+            quantity: 1
+        };
+        axios.post('/cart/add', data)
+            .then(response => {
+                console.log('Item added to cart:', response.data);
+                toastr.success('Item added to cart!');
+                removeFromWishlist(productId, variantId);
+                window.location.href = '/cart'
+            })
+            .catch(error => {
+                console.error('Error adding item to cart:', error);
+                toastr.error('Failed to add item to cart. Please try again.');
+            });
+    }
+
+    // Remove From Wishlist 
+    function removeFromWishlist(productId, variantId) {
+        axios.delete(`/wishlist/remove/${productId}`, {
+            data: {
+                variantId: variantId || null
+            }
+        })
+        .then(response => {
+            console.log('Item removed from wishlist:', response.data);
+        })
+        .catch(error => {
+            console.error('Error removing item from wishlist:', error);
+            alert('Failed to remove item from wishlist. Please try again.');
+        });
+    }
+    </script>
+    
+
+<%- include("../../views/partials/user/footer") %>

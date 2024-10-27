@@ -11,6 +11,10 @@ const brandSchema = new Schema({
         type: Boolean,
         default: true
     },
+    offerPercentage:{
+        type:Number,
+        required: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

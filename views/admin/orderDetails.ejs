@@ -166,9 +166,9 @@
                         </td>
                         <td><%= orderDetail.productName %></td>
                         <td>
-                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : 'badge-pending' %>">
+                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : order.status === 'Returned' ? 'badge-delivered' : 'badge-pending' %>">
                                 <%= order.status %>
-                            </span>
+                            </span>                            
                         </td> <!-- Status Field -->
                         <td><%= orderDetail.quantity %></td>
                         <td><%= orderDetail.productPrice %></td>
@@ -177,23 +177,28 @@
                 </tbody>
             </table>
 
-            <!-- Order Status and Update Button -->
-            <% if (!errorMessage) { %>
-                <div class="order-status-section mt-4">
-                    <label for="order-status" class="order-status-label">Update Order Status:</label>
-                    <select id="order-status" class="form-select order-status-select">
-                        <option value="pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
-                        <option value="shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                        <option value="delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                    </select>
-                    <button id="btn-update-status" class="btn-update-status mt-2">Update Status</button>
-                </div>
-            <% } else { %>
+           <!-- Order Status and Update Button -->
+                <% if (!errorMessage) { %>
+                    <div class="order-status-section mt-4">
+                        <label for="order-status" class="order-status-label">Update Order Status:</label>
+                        <select id="order-status" class="form-select order-status-select">
+                            <% if (order.status === 'Return Request') { %>
+                                <option value="approve" <%= order.status === 'Approve' ? 'selected' : '' %>>Approve Return</option>
+                                <option value="decline" <%= order.status === 'Decline' ? 'selected' : '' %>>Decline Return</option>
+                            <% } else { %>
+                                <option value="pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                <option value="shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                <option value="delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                            <% } %>
+                        </select>
+                        <button id="btn-update-status" class="btn-update-status mt-2">Update Status</button>
+                    </div>
+                <% } else { %>
                     <div class="error-message mt-4">
                         <i class="info-icon"><img src="/admin/img/warning-exclamation.svg" alt="Warning Icon"></i>
-                        You can't update the status once it is&nbsp;<strong>Returned</strong>.
-                    </div>                             
-            <% } %>                      
+                        <%- errorMessage %>
+                    </div>
+                <% } %>       
         </div>
     </div>
 

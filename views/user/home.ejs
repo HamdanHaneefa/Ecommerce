@@ -1,4 +1,19 @@
 <%-include("../../views/partials/user/header")%>
+<style>
+    .offer-label {
+        position: absolute; /* Absolute positioning */
+        top: 10px; /* Distance from the top */
+        left: 10px; /* Distance from the left */
+        background-color: #d9534f; /* Bootstrap danger color or any color you prefer */
+        color: white; /* Text color */
+        padding: 5px 10px; /* Padding for better appearance */
+        border-radius: 5px; /* Rounded corners */
+        font-weight: bold; /* Make text bold */
+        font-size: 14px; /* Font size */
+        z-index: 10; /* Ensure it appears above other elements */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
+    }
+</style>
 
     <section id="home-section" class="hero">
 		  <div class="home-slider owl-carousel">
@@ -32,7 +47,7 @@
 						  <h1 class="mb-4 mt-3 new-era">new era of sounds</h1>
 						  <p class="mb-4">Explore our store's range of headsets, from portable Bluetooth speakers to immersive sound systems, all designed for unmatched sound quality and innovation.</p>
 						  
-						  <p><a href="#" class="btn-custom">Shop now</a></p>
+						  <p><a href="/shop" class="btn-custom">Shop now</a></p>
 						</div>
 		            </div>
 		          </div>
@@ -92,49 +107,57 @@
 					</div>
 				</div>       
 			</div>
+			
 			<div class="container">
-				<div class="row">
-					<% for (let i = 0; i < products.length; i++) { %> <!-- Loop through the products array using for loop -->
-						<div class="col-sm-12 col-md-6 col-lg-3  d-flex">
-							<div class="product d-flex flex-column">
-								<!-- Product image and overlay -->
-								<a href="/product/<%= products[i]._id %>" class="img-prod">
-									<img class="img-fluid" src="/uploads/product-images/<%= products[i].ProductImage %>" alt="<%= products[i].productName %>">
-									<div class="overlay"></div>
-								</a>
-								<!-- Product details -->
-								<div class="text py-3 pb-4 px-3">
-									<div class="d-flex">
-										<div class="cat">
-											<span><%= products[i].brand %></span>
-										</div>
-										<div class="rating">
-											<p class="text-right mb-0">
-												<a href="#"><span class="ion-ios-star-outline"></span></a>
-												<a href="#"><span class="ion-ios-star-outline"></span></a>
-												<a href="#"><span class="ion-ios-star-outline"></span></a>
-												<a href="#"><span class="ion-ios-star-outline"></span></a>
-												<a href="#"><span class="ion-ios-star-outline"></span></a>
-											</p>
-										</div>
-									</div>
-									<h3><a href="/product/<%= products[i]._id %>"><%= products[i].productName %></a></h3>
-									<div class="pricing">
-										<p class="price"><span>₹<%= products[i].price %></span></p>
-									</div>
-									<p class="bottom-area d-flex px-3">
-										<!-- <a href="/cart/add/<%= products[i]._id %>" class="add-to-cart text-center py-2 mr-1">
-											<span>Add to cart <i class="ion-ios-add ml-1"></i></span>
-										</a> -->
-										<!-- <a href="/checkout/<%= products[i]._id %>" class="buy-now text-center py-2">
-											Buy now <span><i class="ion-ios-cart ml-1"></i></span>
-										</a> -->
-									</p>
-								</div>
-							</div>
-						</div>
-					<% } %> <!-- End of product loop -->
-				</div>
+    			<div class="row">
+    			    <% for (let i = 0; i < products.length; i++) { %> <!-- Loop through the products array using for loop -->
+    			        <div class="col-sm-12 col-md-6 col-lg-3 d-flex">
+    			            <div class="product d-flex flex-column">
+    			                <!-- Product image and overlay -->
+    			                <a href="/product/<%= products[i]._id %>" class="img-prod">
+    			                    <img class="img-fluid" src="/uploads/product-images/<%= products[i].ProductImage %>" alt="<%= products[i].productName %>">
+    			                    <div class="overlay"></div>
+    			                    <% if (products[i].effectiveOffer > 0) { %>
+    			                        <div class="offer-label">Offer: <%= products[i].effectiveOffer %>% Off</div>
+    			                    <% } %>
+    			                </a>
+    			                <!-- Product details -->
+    			                <div class="text py-3 pb-4 px-3">
+    			                    <div class="d-flex justify-content-between">
+    			                        <div class="cat">
+    			                            <span><%= products[i].brand %></span>
+    			                        </div>
+    			                        <div class="wishlist">
+    			                            <a href="#" class="wishlist-button" title="Add to Wishlist">
+    			                                <span class="ion-ios-heart-outline"></span>
+    			                            </a>
+    			                        </div>
+    			                    </div>
+    			                    <h3><a href="/product/<%= products[i]._id %>"><%= products[i].productName %></a></h3>
+    			                    <div class="pricing">
+    			                        <p class="price">
+    			                            <% if (products[i].effectiveOffer > 0) { %>
+    			                                <span class="price-original" style="text-decoration: line-through; color: #888;">
+    			                                    ₹<%= products[i].price %>
+    			                                </span>
+    			                                <span class="price-effective" style="font-weight: bold; color: #d9534f;">
+    			                                    ₹<%= products[i].variants[0].salePrice %>
+    			                                </span>
+    			                            <% } else { %>
+    			                                <span class="price-original" style="color: #888;">
+    			                                    ₹<%= products[i].price %>
+    			                                </span>
+    			                            <% } %>
+    			                        </p>
+    			                    </div>
+    			                    <p class="bottom-area d-flex px-3">
+    			                        <!-- Add to cart or Buy now buttons can go here if needed -->
+    			                    </p>
+    			                </div>
+    			            </div>
+    			        </div>
+    			    <% } %> <!-- End of product loop -->
+    			</div>
 			</div>
 		</section>
 
@@ -201,6 +224,7 @@
                 timeOut: "5000", 
                 extendedTimeOut: "1000", 
                 onclick: function() { 
+				const cart ='/cart'
             	window.location.href = '/login';
         		}
             };

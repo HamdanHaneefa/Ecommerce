@@ -1,4 +1,24 @@
 <%- include("../../views/partials/user/header") %>
+<style>
+    .img-prod {
+    position: relative; /* Positioning context for absolute children */
+}
+
+.offer-label {
+    position: absolute; /* Absolute positioning */
+    top: 10px; /* Distance from the top */
+    left: 10px; /* Distance from the left */
+    background-color: #d9534f; /* Bootstrap danger color or any color you prefer */
+    color: white; /* Text color */
+    padding: 5px 10px; /* Padding for better appearance */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold; /* Make text bold */
+    font-size: 14px; /* Font size */
+    z-index: 10; /* Ensure it appears above other elements */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
+}
+
+</style>
 
 <section class="ftco-section bg-light">
     <div class="container">
@@ -25,11 +45,14 @@
                         </div>
                     <% } else { %> <!-- If products exist, display them -->
                         <% products.forEach(product => { %> <!-- Loop through each product -->
-                            <div class="col-sm-12 col-md-12 col-lg-4 ftco-animate d-flex">
+                            <div class="col-sm-12 col-md-12 col-lg-4 d-flex">
                                 <div class="product d-flex flex-column">
                                     <a href="/product/<%= product._id %>" class="img-prod">
                                         <img class="img-fluid" src="/uploads/product-images/<%= product.ProductImage %>" alt="<%= product.productName %>">
                                         <div class="overlay"></div>
+                                        <% if (product.effectiveOffer > 0) { %>
+                                            <div class="offer-label">Offer: <%= product.effectiveOffer %>% Off</div>
+                                        <% } %>
                                     </a>
                                     <div class="text py-3 pb-4 px-3">
                                         <div class="d-flex justify-content-between">
@@ -42,10 +65,21 @@
                                                 </a>
                                             </div>
                                         </div>
-                                        <h3><a href="#"><%= product.productName %></a></h3> 
+                                        <h3><a href="#"><%= product.productName %></a></h3>
                                         <div class="pricing">
                                             <p class="price">
-                                                <span class="price-sale">₹<%= product.price %></span> 
+                                                <% if (product.effectiveOffer > 0) { %>
+                                                    <span class="price-original" style="text-decoration: line-through; color: #888;">
+                                                        ₹<%= product.price %>
+                                                    </span>
+                                                    <span class="price-effective" style="font-weight: bold; color: #d9534f;">
+                                                        ₹<%= product.variants[0].salePrice %>
+                                                    </span>
+                                                <% } else { %>
+                                                    <span class="price-original" style="color: #888;">
+                                                        ₹<%= product.price %>
+                                                    </span>
+                                                <% } %>
                                             </p>
                                         </div>
                                         <p class="bottom-area d-flex px-3"></p>
@@ -55,6 +89,9 @@
                         <% }); %> <!-- End product loop -->
                     <% } %>
                 </div>
+                
+                
+                
                 
             </div>
 

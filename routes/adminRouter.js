@@ -61,5 +61,22 @@ router.get('/order-details/:id',adminAuth,orderController.orderDetails);
 router.post('/update-status',adminAuth,orderController.changeStatus)
 
 
+//COUPONS 
+router.get('/coupons',adminAuth,orderController.loadCoupons)
+router.post('/coupons/add-coupon',adminAuth,orderController.addCoupon)
+router.post('/toggleCoupon/:action/:id', adminAuth, orderController.toggleCoupon);
+router.delete('/coupons/:id', adminAuth, orderController.deleteCoupon);
+router.post('/coupon/edit-coupon',adminAuth, orderController.editCoupon)
+
+
+//OFFERS
+router.get('/offers',adminAuth,orderController.loadOffers)
+router.get('/add-product-offer',adminAuth,orderController.loadProductOffer)
+router.get('/add-brand-offer',adminAuth,orderController.loadBrandOffer)
+router.post('/saveOffer',adminAuth,orderController.saveOffer)
+router.delete('/deleteOffer',adminAuth,orderController.deleteOffer)
+
+
+
 
 module.exports = router;

@@ -48,6 +48,24 @@ const cartSchema = new Schema({
     cartTotal:{
         type:Number,
         required:true
+    },
+    discount:{
+        type:Number,
+        required:true
+    },
+    finalAmount:{
+        type:Number,
+        required:true
+    },
+    couponRedeemed: {
+        status: {
+            type: Boolean,
+            default: false
+        },
+        coupon: {
+            type: String,
+            default: null
+        }
     }
 })
 

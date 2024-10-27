@@ -25,6 +25,10 @@ const variantSchema = new Schema({
         type: String,
         required:true
     },
+    salePrice:{
+        type:Number,
+        required:true
+    },
     isActive: {
         type: Boolean,
         default: true
@@ -72,6 +76,14 @@ const productSchema = new Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    offerPercentage:{
+        type:Number,
+        required: false
+    },
+    effectiveOffer:{
+        type:Number,
+        required: false
     },
     variants: [variantSchema] 
 }, { timestamps: true });

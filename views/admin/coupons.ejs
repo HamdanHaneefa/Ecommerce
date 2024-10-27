@@ -1,0 +1,304 @@
+<%- include("../../views/partials/admin/header") %>
+
+<style>
+    .clickable-row {
+        cursor: pointer;
+    }
+
+    .clickable-row:hover {
+        background-color: #f5f5f5;
+    }
+
+    .expiration-date {
+        font-size: 1rem; /* Standard font size */
+        color: #000; /* Set text color to black for standard appearance */
+        padding: 0.25rem; /* Optional: some padding for spacing */
+    }
+
+    .delete-btn {
+        display: inline-flex; /* Ensure the icon centers properly */
+        align-items: center; /* Aligns icon vertically */
+        transition: color 0.3s; /* Smooth color transition */
+    }
+
+    .delete-btn:hover {
+        color: #b02a37; /* Darker red on hover */
+        text-decoration: none; /* Remove underline */
+    }
+
+    .action-btn {
+        width: 100px; /* Fixed width for both buttons */
+        height: 40px; /* Fixed height for both buttons */
+        display: inline-flex; /* Center the content */
+        align-items: center; /* Center vertically */
+        justify-content: center; /* Center horizontally */
+        font-size: 0.875rem; /* Font size */
+    }
+</style>
+
+<div class="container">
+    <h1>Coupon Management</h1>
+    
+    <!-- Button to Add New Coupon -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addCouponModal">+ Add New Coupon</button>
+
+    <!-- Responsive Table for Displaying Coupons -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Coupon Code</th>
+                    <th>Discount</th>
+                    <th>Min Purchase</th>
+                    <th>Max Amount</th>
+                    <th>Expiration Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (coupons && coupons.length > 0) { %>
+                    <% coupons.forEach(function(coupon) { %>
+                    <tr class="clickable-row">
+                        <td><%= coupon.name %></td>
+                        <td><%= coupon.discount + '%'%></td> 
+                        <td><%= coupon.minimumPrice %></td>
+                        <td><%= coupon.maximumPrice %></td>
+                        <td class="expiration-date"><%= new Date(coupon.expireOn).toDateString() %></td>
+                        <td>
+                            <% if (coupon.isList) { %>
+                                <button class="btn btn-sm btn-success action-btn me-2" onclick="toggleCoupon('<%= coupon._id %>', 'deactivate')">Active</button>
+                            <% } else { %>
+                                <button class="btn btn-sm btn-danger action-btn me-2" onclick="toggleCoupon('<%= coupon._id %>', 'activate')">Deactive</button>
+                            <% } %>
+                            <a href="javascript:void(0);" class="delete-btn" title="Delete" onclick="confirmDelete('<%= coupon._id %>')">
+                                <i class="bi bi-trash" style="font-size: 1.5rem; color: #dc3545;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6">No coupons available.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+            <li class="page-item"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Edit Coupon Modal -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCouponForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="couponCode" class="form-label">Coupon Code</label>
+                            <input type="text" class="form-control" id="couponCode" required value="EXISTING_CODE" oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="discount" class="form-label">Discount</label>
+                            <input type="number" class="form-control" id="discount" required value="20">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="minPurchase" class="form-label">Minimum Purchase</label>
+                            <input type="number" class="form-control" id="minPurchase" required value="5000">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="maxDiscount" class="form-label">Maximum Discount</label>
+                            <input type="number" class="form-control" id="maxDiscount" required value="50000">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="expirationDate" class="form-label">Expiration Date</label> 
+                            <input type="date" class="form-control" id="expirationDate" required value="2024-12-31"> 
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveChanges">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Add New Coupon Modal -->
+<div class="modal fade" id="addCouponModal" tabindex="-1" aria-labelledby="addCouponModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCouponModalLabel">Add New Coupon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCouponForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="newCouponCode" class="form-label">Coupon Code</label>
+                            <input type="text" class="form-control" id="newCouponCode" required oninput="this.value = this.value.toUpperCase() " value="TEST20">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="newDiscount" class="form-label">Discount</label>
+                            <input type="number" class="form-control" id="newDiscount" required value="20">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="newMinPurchase" class="form-label">Minimum Purchase</label>
+                            <input type="number" class="form-control" id="newMinPurchase" required value="5000">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="newMaxAmount" class="form-label">Maximum Amount</label>
+                            <input type="text" class="form-control" id="newMaxAmount" required value="50000">
+                        </div>                        
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="newExpirationDate" class="form-label">Expiration Date</label>
+                            <input type="date" class="form-control" id="newExpirationDate" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveNewCoupon">Add Coupon</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<%- include("../../views/partials/admin/footer") %>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- Toastr CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+<script>
+    $(document).ready(function() {
+        // Initialize the modal
+        var editCouponModal = new bootstrap.Modal(document.getElementById('editCouponModal'));
+        var addCouponModal = new bootstrap.Modal(document.getElementById('addCouponModal'));
+
+
+        $('.clickable-row').on('click', function(e) {
+            if (!$(e.target).is('button') && !$(e.target).is('.bi')) {
+                $('#couponCode').val($(this).find('td').eq(0).text());
+                $('#discount').val($(this).find('td').eq(1).text());
+                $('#minPurchase').val($(this).find('td').eq(2).text());
+                $('#maxDiscount').val($(this).find('td').eq(3).text());
+                $('#expirationDate').val($(this).find('td').eq(4).text()); 
+                editCouponModal.show();
+            }
+        });
+
+
+        // Handle saving the new coupon
+    $('#saveNewCoupon').on('click', function() {
+            var newCoupon = {
+                code: $('#newCouponCode').val(),
+                discount: $('#newDiscount').val(),
+                minPurchase: $('#newMinPurchase').val(),
+                maxAmount: $('#newMaxAmount').val(),
+                expirationDate: $('#newExpirationDate').val() 
+            };
+            console.log('New Coupon:', newCoupon);
+            
+            axios.post('/admin/coupons/add-coupon',newCoupon)
+            .then(response =>{
+                  toastr.success(response.data.message); 
+                 setTimeout(() => {
+                 window.location.reload();  
+                 }, 1500); 
+            })
+            .catch(error =>{
+                const errorMessages = error.response.data.error
+                console.error('Error',errorMessages)
+                toastr.error(errorMessages)
+                setTimeout(()=>{
+                    window.location.reload();
+                },2000)
+            })
+
+            addCouponModal.hide();
+            $('#addCouponForm')[0].reset(); 
+    });
+});
+
+//To Change Status
+function toggleCoupon(couponId, action) {
+    axios.post(`/admin/toggleCoupon/${action}/${couponId}`, {
+        id: couponId, 
+    })
+    .then(response => {
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error.response ? error.response.data : error.message);
+    });
+}
+
+// Handle delete icon click
+function confirmDelete(couponId) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.delete(`/admin/coupons/${couponId}`)
+                    .then(response => {
+                        console.log(response.data);
+                        Swal.fire(
+                            'Deleted!',
+                            'Your coupon has been deleted.',
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error deleting coupon:', error);
+                        Swal.fire(
+                            'Error!',
+                            'An error occurred while deleting the coupon. Please try again.',
+                            'error'
+                        );
+                });
+            }
+        });
+    }
+
+
+
+</script>
+

@@ -34,6 +34,11 @@ app.use((req, res, next) => {
    next();
  });
 
+ //ERROR HANDLING 
+//  app.use((req, res, next) => {
+//    res.status(404).render('404', { error: 'Page Not Found' }); 
+// });
+
 app.use(passport.initialize());
 app.use(passport.session());
 

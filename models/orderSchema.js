@@ -18,7 +18,7 @@ const orderSchema = new Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned' ,'Cancelled']
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned' , 'Return Cancelled' ,'Cancelled']
     },
     address: {
         type: Schema.Types.ObjectId,
@@ -52,15 +52,29 @@ const orderSchema = new Schema({
             type: Date,
             default: Date.now,
             required: true
-        },
-        couponApplied: {
-            type: Boolean,
-            default: false
         }
     }],
+    discount: {
+        type:Number,
+        required: true
+    },
     totalAmount: {
         type: Number,
         required: true
+    },
+    finalAmount :{
+        type: Number,
+        required: true
+    },
+    couponRedeemed: {
+        status: {
+            type: Boolean,
+            default: false
+        },
+        coupon: {
+            type: String,
+            default: null
+        }
     },
 }, { timestamps: true }); 
 

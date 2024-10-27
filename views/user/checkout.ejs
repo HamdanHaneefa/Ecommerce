@@ -1,10 +1,66 @@
 <%- include("../../views/partials/user/header") %>
+<style>
+
+.coupon-card {
+        width: 140px; /* Set width for the coupon card */
+        height: auto; /* Height adjusts based on content */
+        border: 1px solid #007bff; /* Blue border */
+        border-radius: 8px; /* Rounded corners */
+        padding: 5px; /* Reduced padding inside the card */
+        margin: 5px; /* Reduced margin between cards */
+        background-color: #ffffff; /* White background for the card */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        transition: transform 0.2s; /* Animation effect */
+        position: relative; /* Position relative for the button */
+    }
+
+    .coupon-card:hover {
+        transform: translateY(-2px); /* Lift effect on hover */
+    }
+
+    .coupon-name {
+        font-weight: bold;
+        color: #343a40; /* Dark gray for coupon name */
+        margin: 0; /* Remove default margin */
+        font-size: 1em; /* Standard font size for coupon name */
+    }
+
+    .discount {
+        font-size: 0.9em; /* Slightly smaller font size for discount */
+        color: #28a745; /* Green color for discount */
+        margin: 3px 0; /* Space above and below discount */
+    }
+
+    .copy-button {
+        position: absolute; /* Absolute positioning */
+        top: 5px; /* Position from the top */
+        right: 5px; /* Position from the right */
+        cursor: pointer; /* Change cursor to pointer */
+        background-color: #6c757d; /* Standard gray color */
+        border: none; /* No border */
+        color: white; /* White text color */
+        padding: 3px 6px; /* Smaller padding for the button */
+        border-radius: 5px; /* Rounded button */
+        font-size: 0.7em; /* Smaller font size for button text */
+        transition: background-color 0.3s; /* Transition for hover effect */
+    }
+
+    .copy-button:hover {
+        background-color: #5a6268; /* Darker gray on hover */
+    }
+
+    .coupon-container {
+        display: flex; /* Use flexbox for container */
+        flex-wrap: wrap; /* Allow wrapping to the next line */
+        justify-content: flex-start; /* Align items to the start */
+    }
+</style>
 
 <section class="ftco-section" style="background-color: white;">
     <div class="container">
         <div class="row justify-content-center">
             <!-- Left Side: Checkout Details -->
-            <div class="col-md-6 ftco-animate">
+            <div class="col-md-6 ">
                 <form action="#" class="billing-form" id="checkoutForm">
                     <h3 class="mb-4 billing-heading" style="font-size: 1.25rem;">Checkout</h3>
 
@@ -15,7 +71,7 @@
                             <select id="existingAddresses" class="form-control" style="font-size: 0.85rem;">
                                 <option value="">Select an address</option>
                                 <% addresses.forEach(address => { %>
-                                    <option value="<%= address.id %>"> <!-- Use address.id instead of the full address string -->
+                                    <option value="<%= address.id %>">
                                         <%= address.name %> - <%= address.street %>, <%= address.city %>, <%= address.state %> <%= address.zipcode %>, <%= address.country %>
                                     </option>
                                 <% }); %>
@@ -61,21 +117,53 @@
             <!-- Right Side: Coupon Code Section and Your Order -->
             <div class="col-md-6">
                 <!-- Coupon Code Section -->
-                <div class="coupon-code bg-light p-3 mb-4" style="box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
+                <div class="coupon-code bg-light p-3 mb-4" style="box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;">
                     <h5 class="billing-heading mb-3" style="font-size: 1.1rem;">Coupon Code</h5>
-                    <a href="#" style="font-size: 0.85rem; color: blue;">check available coupons</a>
-                    <div class="input-group mt-2">
-                        <input type="text" class="form-control" placeholder="Enter your coupon code if you have one">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="button">APPLY</button>
+
+                    <% if (!userCart.couponRedeemed.status) { %>
+                        <a href="#" id="checkCoupons" style="font-size: 0.85rem; color: blue; cursor: pointer;" onclick="toggleCoupons()">check available coupons</a>
+
+                        <!-- Collapse for available coupons -->
+                        <div id="availableCoupons" class="collapse mt-2">
+                            <div class="card card-body">
+                                <p><strong>Available Coupons:</strong></p>
+                                <div class="coupon-container"> <!-- Flex container for coupons -->
+                                    <% if (coupons && coupons.length > 0) { %>
+                                        <% coupons.forEach(coupon => { %>
+                                            <div class="coupon-card">
+                                                <button class="btn copy-button" onclick="copyToClipboard('<%= coupon.name %>')">Copy</button>
+                                                <p class="coupon-name"><%= coupon.name %></p>
+                                                <p class="discount">UP TO <%= coupon.discount %>% OFF</p>
+                                            </div>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <p>No available coupons.</p>
+                                    <% } %>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="input-group mt-2">
+                            <input type="text" id="couponInput" class="form-control" placeholder="Enter your coupon code" oninput="this.value = this.value.toUpperCase();">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button" id="applyCoupon">APPLY</button>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div id="appliedCouponSection" style="display: block; margin-top: 10px;">
+                            <p>You have saved a coupon of <strong id="appliedCouponName"><%= couponName %></strong> with a discount of <strong id="appliedCouponOffer" style="color: #28a745;">₹<%= userCart.discount %></strong></p>
+                            <button class="btn btn-outline-danger" id="removeCoupon">REMOVE</button>
+                        </div>
+                    <% } %>
+
+                    <div id="toast" style="display: none; position: fixed; top: 20px; right: 20px; background-color: #28a745; color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
+                        Coupon code copied to clipboard!
                     </div>
-                </div>
 
-                <!-- Line Separator with Drop Shadow -->
-                <div class="separator" style="border-top: 1px solid #ddd; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); margin-bottom: 20px;"></div>
+                    <!-- Line Separator with Drop Shadow -->
+                    <div class="separator" style="border-top: 1px solid #ddd; box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); margin-bottom: 20px;"></div>
 
-                <!-- Your Order Section -->
+                    <!-- Your Order Section -->
                 <div class="cart-detail bg-light p-4" style="box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);">
                     <h3 class="billing-heading mb-4" style="font-size: 1.25rem;">Your Order</h3>
                     <div class="border p-3 mb-4">
@@ -91,76 +179,134 @@
                         <div class="mt-4">
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Cart Subtotal</span>
-                                <span>₹<%= cartTotal %></span>
+                                <span>₹<%= userCart.cartTotal %></span>
                             </h5>
 
                             <!-- Coupon Offer (Default: None) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Coupon Offer</span>
-                                <span>None</span>
+                                <span style="color: green;">-₹<%= userCart.discount %></span>
                             </h5>
 
                             <!-- Order Total (Same as Cart Subtotal for now) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Order Total</span>
-                                <span>₹<%= cartTotal %></span>
+                                <span>₹<%= userCart.cartTotal %></span>
                             </h5>
 
                             <!-- Delivery Charge (Default: 0) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Delivery Charge</span>
-                                <span>₹0</span>
+                                <span  style="color: green;">FREE</span>
                             </h5>
                         </div>
 
                         <!-- Final Total -->
                         <div class="d-flex justify-content-between mt-2">
                             <strong>Total:</strong>
-                            <span>₹<%= cartTotal %></span>
+                            <span>₹<%= userCart.finalAmount %></span>
+                        </div>
                         </div>
                     </div>
-                </div>                
+                </div>
             </div>
         </div>
     </div>
 </section>
+
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 
 <script>
     document.getElementById('placeOrderBtn').addEventListener('click', async () => {
-        const selectedAddress = document.getElementById('existingAddresses').value;
-        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+    const selectedAddress = document.getElementById('existingAddresses').value;
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
 
-        if (!paymentMethod) {
-            toastr.error('Please select a payment method.', "Error");
-            return;
-        }
+    if (!paymentMethod) {
+        toastr.error('Please select a payment method.', "Error");
+        return;
+    }
 
-        const paymentMethodValue = paymentMethod.value;
+    const paymentMethodValue = paymentMethod.value;
 
-        if (!selectedAddress) {
-            toastr.error('Please select an address.', "Error");
-            return;
-        }
+    if (!selectedAddress) {
+        toastr.error('Please select an address.', "Error");
+        return;
+    }
 
-        const orderData = {
-            addressId: selectedAddress, 
-            paymentMethod: paymentMethodValue,
-        };
+    const orderData = {
+        addressId: selectedAddress,
+        paymentMethod: paymentMethodValue,
+    };
+    console.log(orderData)
+    $.ajax({
+        url: '/cart/checkout/place-order',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(orderData),
+        success: function(responseData) {
+            console.log('Order placed successfully:', responseData);
 
-        $.ajax({
-            url: '/cart/checkout/place-order',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(orderData),
-            success: function(responseData) {
-                console.log('Order placed successfully:', responseData);
-
+            if (paymentMethodValue === 'Razorpay') {
+                const options = {
+                    key: 'rzp_test_HSlU3uymqrTahm',
+                    amount: responseData.order.finalAmount * 100,
+                    currency: 'INR',
+                    name: 'VocalGear',
+                    description: 'Order ID: ' + responseData.order.razorpayOrderId,
+                    order_id: responseData.razorpayOrderId,
+                    handler: function(response) {
+                        $.ajax({
+                            url: '/cart/checkout/verify-payment',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({
+                                razorpay_order_id: responseData.order.razorpayOrderId,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            }),
+                            success: function(verifyResponse) {
+                                if (verifyResponse.success) {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: 'Payment verified! Your order has been placed.',
+                                        icon: 'success',
+                                        confirmButtonText: 'Okay'
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            window.location.href = '/orders';
+                                        }
+                                    });
+                                } else {
+                                    toastr.error("Payment verification failed. Please contact support.", "Error");
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error verifying payment:', error);
+                                toastr.error("Error verifying payment. Please contact support.", "Error");
+                            }
+                        });
+                    },
+                    prefill: {
+                        name: '',
+                        email: '',
+                        contact: ''
+                    },
+                    theme: {
+                        color: '#F37254'
+                    }
+                };
+                const razorpay = new Razorpay(options);
+                razorpay.open();
+            } else {
                 Swal.fire({
                     title: 'Success!',
                     text: responseData.message || 'Your order has been placed successfully!',
@@ -171,14 +317,98 @@
                         window.location.href = '/orders';
                     }
                 });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error placing order:', error);
-                toastr.error( xhr.responseJSON.message || error, "Error");
             }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error placing order:', error);
+            toastr.error(xhr.responseJSON.message || error, "Error");
+        }
+    });
+});
+</script>
+
+
+<!-- JavaScript to handle the apply logic and toggle coupon display -->
+<script>
+  $(document).ready(function() {
+            $('#applyCoupon').on('click', function() {
+                var couponInput = $('#couponInput').val().trim(); 
+                if (couponInput) {
+                    console.log('Applied Coupon:', couponInput);
+
+                    axios.post('/apply-coupon', { couponCode: couponInput })
+                        .then(function(response) {
+                            toastr.success('Coupon applied successfully!');
+                            window.location.reload()
+                            console.log('Server response:', response.data);
+                        })
+                        .catch(function(error) {
+                            console.error('Error applying coupon:', error);
+                            if (error.response && error.response.data && error.response.data.message) {
+                            toastr.error(error.response.data.message); 
+                            } else {
+                            toastr.error('Failed to apply coupon. Please try again.');
+                            }
+                        });
+
+                    $('#couponInput').val('');
+                } else {
+                    toastr.options.timeOut = 1200; 
+                    toastr.error('Please enter a coupon code before applying.'); 
+                }
+            });
         });
 
+    function toggleCoupons() {
+        var couponsDiv = document.getElementById('availableCoupons');
+        var checkCouponsLink = document.getElementById('checkCoupons');
+
+        if (couponsDiv.classList.contains('show')) {
+            couponsDiv.classList.remove('show');
+            checkCouponsLink.textContent = 'check available coupons';
+        } else {
+            couponsDiv.classList.add('show');
+            checkCouponsLink.textContent = 'hide available coupons';
+        }
+    }
+
+    //copyToClipboard 
+    function copyToClipboard(couponCode) {
+        const tempInput = document.createElement('input');
+        tempInput.value = couponCode;
+        document.body.appendChild(tempInput);
+        navigator.clipboard.writeText(tempInput.value)
+            .then(() => {
+                const toast = document.getElementById("toast");
+                toast.style.display = "block";
+                setTimeout(() => {
+                    toast.style.display = "none"; 
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        document.body.removeChild(tempInput);
+    }
+
+
+    //Delete Coupon
+    $('#removeCoupon').on('click', function() { 
+        axios.delete('/delete-coupon')
+        .then(function(response) {
+            toastr.success('Coupon removed successfully');
+            window.location.reload();
+            console.log('Server response:', response.data);
+         })
+         .catch(function(error) {
+                console.error('Error applying coupon:', error);
+            if (error.response && error.response.data && error.response.data.message) {
+                toastr.error(error.response.data.message); 
+            }
+        });
     });
+
 </script>
+
 
 <%- include("../../views/partials/user/footer") %>

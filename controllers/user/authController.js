@@ -210,9 +210,9 @@ const login = async (req, res) => {
     req.flash('error_msg', 'Login failed. Please try again later.');
     res.redirect('/login');
   }
-};
+}; 
  
-
+ 
 const logout = async (req,res) =>{
     try {
       req.session.destroy((err)=>{

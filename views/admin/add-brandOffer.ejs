@@ -1,0 +1,139 @@
+<%- include("../../views/partials/admin/header") %>
+
+<!-- Styles -->
+<style>
+    .custom-offer-btn {
+        background-color: #d4af37;
+        color: white;
+        border: none;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+
+    .custom-offer-btn:hover {
+        background-color: #b8860b;
+    }
+
+    .custom-offer-btn:focus {
+        outline: none;
+        box-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-left">
+        <div class="col-12">
+            <div class="bg-light rounded h-100 p-4 large-box">
+                <h6 class="mb-4 text-center" style="font-weight: bold; color: black;">Brand Offer Management</h6>
+
+                <div class="table-responsive">
+                    <table id="brandOfferTable" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type ID</th>
+                                <th>Brand Name</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% brands.forEach(brand => { %> <!-- Loop through each brand -->
+                                <tr>
+                                    <td><%= brand._id %></td> <!-- Assuming you want to use the ObjectId as Type ID -->
+                                    <td><%= brand.name %></td>
+                                    <td>
+                                        <span style="color:green">
+                                            <%= brand.isActive ? 'Active' : 'Inactive' %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm custom-offer-btn" onclick="openBrandOfferModal('<%= brand._id %>')">Add Offer</button>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offer Modal -->
+<div class="modal fade" id="brandOfferModal" tabindex="-1" role="dialog" aria-labelledby="brandOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="brandOfferModalLabel">Enter Offer Percentage</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="brandOfferForm">
+                    <div class="form-group">
+                        <label for="brandOfferPercentage">Offer Percentage:</label>
+                        <input type="number" class="form-control" id="brandOfferPercentage" min="0" max="100" required>
+                    </div>
+                    <input type="hidden" id="typeId"> <!-- Hidden input for type ID -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal()">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveBrandOffer()">Save Offer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+
+<script>
+    function openBrandOfferModal(typeId) {
+        $('#typeId').val(typeId); 
+        $('#brandOfferModal').modal('show'); 
+    }
+
+    function closeModal() {
+        $('#brandOfferModal').modal('hide'); 
+    }
+
+    function saveBrandOffer() {
+        const typeId = $('#typeId').val();
+        const offerPercentage = $('#brandOfferPercentage').val(); 
+
+            axios.post('/admin/saveOffer', {  
+                type:'brands',
+                typeId: typeId,
+                percentage: offerPercentage
+            })
+            .then(function(response) {
+                Swal.fire({
+                    title: 'Offer Saved!',
+                    text: "The offer has been applied successfully.",
+                    icon: 'success',
+                    confirmButtonColor: '#28a745',
+                    confirmButtonText: 'OK' 
+            }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/admin/offers'; 
+            }
+        });
+            })
+            .catch(function(error) {
+                console.log("ERRROROR",error)
+                toastr.error(error.response.data.message);
+            });
+        }
+</script>
+
+<%- include("../../views/partials/admin/footer") %>

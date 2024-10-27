@@ -255,6 +255,7 @@ const addVarient = async (req, res) => {
       images: uploadedImages,
       stock,
       price,
+      salePrice:price,
       description
     });
     await product.save();

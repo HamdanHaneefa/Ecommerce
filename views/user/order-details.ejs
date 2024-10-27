@@ -186,10 +186,24 @@
                     </div>
                     <div class="product-details">
                         <h5><%= item.productName %></h5>
-                        <p>Price: <%= item.price %></p>
+                        <p>Product price: <%= item.price %></p>
                         <p>Color: <%= item.color %></p>
                         <p>Quantity: <%= item.quantity %></p>
-                        <p>Status: <%= item.status %></p>
+                        <p>Status: 
+                            <% if (item.status === 'Cancelled') { %>
+                              <span style="color: red;"><%= item.status %></span>
+                            <% } else if (item.status === 'Pending') { %>
+                              <span style="color: orange;"><%= item.status %></span>
+                            <% } else if (item.status === 'Shipped') { %>
+                              <span style="color: blue;"><%= item.status %></span>
+                            <% } else if (item.status === 'Delivered') { %>
+                              <span style="color: green;"><%= item.status %></span>
+                            <% }else if (item.status === 'Returned') { %>
+                                <span style="color: green;"><%= item.status %></span>
+                            <% }else { %>
+                              <span><%= item.status %></span>
+                            <% } %>
+                        </p>   
                     </div>
                     <div class="product-price">₹ <%= item.productPrice %></div>
                 </div>
@@ -210,7 +224,13 @@
                 <div class="summary-card">
                     <h6>Order Summary</h6>
                     <div class="summary-item">
-                        <strong>Total Price:</strong> <span class="price">₹ <%= order.totalAmount %></span>
+                        <strong>Total Price:</strong> <span class="price">₹ <%= order.finalAmount %></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Original Price:</strong> <span class="quantity"><%= order.totalAmount %></span>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Discounted Amount:</strong> <span class="quantity" style="color: green;">-<%= order.discount %></span>
                     </div>
                     <div class="summary-item">
                         <strong>Items:</strong> <span class="quantity"><%= order.orderedItems.length %></span>

@@ -1,0 +1,143 @@
+<%- include("../../views/partials/user/header") %>
+
+<style>
+    body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f0f4f8;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container-fluid {
+        padding: 1.5rem; /* Reduced padding */
+    }
+
+    /* Coupon list container */
+    .coupon-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem; /* Reduce gap between coupon cards */
+    }
+
+    /* Headings row */
+    .coupon-headings {
+        display: flex;
+        font-weight: bold;
+        padding: 0.75rem; /* Matching padding */
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        margin-bottom: 0.5rem; /* Spacing between headings and cards */
+    }
+
+    .coupon-headings div {
+        flex: 1;
+        text-align: center; /* Center-align headings */
+    }
+
+    /* Coupon card styles */
+    .coupon-card {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* Softer shadow */
+        padding: 0.75rem; /* Reduced padding */
+        background-color: white;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .coupon-card:hover {
+        transform: scale(1.01);
+    }
+
+    /* Text and Info Styling */
+    .coupon-details {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        text-align: center; /* Center-align content */
+    }
+
+    .coupon-details div {
+        flex: 1;
+    }
+
+    .add-coupon {
+        margin-bottom: 1rem;
+        padding: 0.5rem 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .add-coupon:hover {
+        background-color: #0056b3;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        .coupon-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .coupon-details {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .coupon-headings {
+            display: none; /* Hide headings on mobile */
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <%- include("../../views/partials/user/sidebar") %>
+
+        <div class="col-md-9 mt-4">
+            <h2 class="profile-page-title mb-4">Available Coupons</h2>
+            
+            <!-- Headings for Coupon Details -->
+            <div class="coupon-headings d-flex justify-content-between mb-2">
+                <div>Coupon Code</div>
+                <div>Discount</div>
+                <div>Minimum Amount</div>
+                <div>Expiration Date</div>
+            </div>
+
+            <!-- Coupon List -->
+            <div class="coupon-list">
+                <% if (coupons.length > 0) { %>
+                    <% coupons.forEach(coupon => { %>
+                        <div class="coupon-card d-flex align-items-center mb-1 p-2">
+                            <div class="coupon-details d-flex justify-content-between w-100">
+                                <div class="coupon-code">
+                                    <p class="mb-1"><%= coupon.name %></p>
+                                </div>
+                                <div class="coupon-discount">
+                                    <p class="mb-1"><%= coupon.discount %>%</p>
+                                </div>
+                                <div class="coupon-min-amount">
+                                    <p class="mb-1">₹<%= coupon.minimumPrice %></p>
+                                </div>
+                                <div class="coupon-expiration">
+                                    <p class="mb-1"><%= coupon.expireOn.toLocaleDateString() %></p>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p>No coupons available.</p>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+</div>

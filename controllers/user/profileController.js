@@ -1,6 +1,8 @@
 const User = require("../../models/userSchema");
 const Address = require('../../models/addressSchema');
 const Order = require('../../models/orderSchema')
+const Coupon = require('../../models/couponSchema');
+const Cart = require('../../models/cartSchema');
 const path = require('path')
 const fs = require('fs')
 const session = require("express-session");
@@ -399,10 +401,6 @@ const orders = async (req,res) =>{
             const address = await Address.findOne({userId:order.userId})
             const addressDetail = address.addresses.id(order.address)
 
-            if (!order || order.status === 'Cancelled') {
-                req.session.errorMessage = "Order not found.";
-                return res.redirect('/orders');
-            }
             
             const orderDetails = order.orderedItems.map(item => {
                 const variant = item.product.variants.id(item.variantId); 
@@ -441,12 +439,15 @@ const orders = async (req,res) =>{
     }
 };
 
-const cancelOrder = async (req,res) =>{
+const returnOrder = async (req,res) =>{
     try {
         if(req.session.user){
             const {orderId} = req.body
             const order = await Order.findById(orderId)
-            order.status = 'Cancelled';
+            if(order.status === 'Returned'){
+                return res.status(400).json({success:false , message:"Your order is currently in a return request. Status updates are not available at this stage."})
+            }
+            order.status = 'Return Request';
             order.save();
             return res.json({success:true});  
         }else{
@@ -458,11 +459,130 @@ const cancelOrder = async (req,res) =>{
     }
 }
 
+const loadCoupon = async (req,res) =>{
+    try {
+        if(req.session.user){
+            const userId = req.session.user
+            const user = User.findById(userId)
+            const coupons = await Coupon.find({ isList: true, userId: { $ne: userId } });
+            res.render('coupon',{user,url:req.originalUrl,coupons});
+        }else{
+            req.session.errorMessage = "Oops! It seems you need to log in again.";
+            res.redirect('/');
+        }
+    } catch (error) {
+        console.log("Error occured in loadCoupon",error)
+        res.redirect('/profile')
+    }
+}
 
+
+
+const applyCoupon = async (req, res) => {
+    try {
+        const { couponCode } = req.body;
+
+        if (!couponCode || typeof couponCode !== 'string' || couponCode.length < 3) {
+            return res.status(400).json({ message: 'Invalid coupon code format.' });
+        }
+
+        const coupon = await Coupon.findOne({ name: couponCode });
+        if (!coupon) {
+            return res.status(400).json({ message: 'Coupon code does not exist.' });
+        }
+
+        const currentDate = new Date();
+        if (coupon.expireOn < currentDate) {
+            return res.status(400).json({ message: 'Coupon has expired.' });
+        }
+
+        if (!coupon.isList) {
+            return res.status(400).json({ message: 'Coupon is not valid.' });
+        }
+
+        const userId = req.session.user;
+        const cart = await Cart.findOne({ userId });
+        const user = await User.findById(userId);
+
+       
+
+        if (!cart) {
+            return res.status(400).json({ message: 'Cart not found.' });
+        }
+
+        if (cart.cartTotal >= coupon.maximumPrice) {
+            return res.status(400).json({ message: `Minimum purchase of ₹${coupon.maximumPrice} required to use this coupon.` });
+        }
+
+        if (cart.cartTotal <= coupon.minimumPrice) {
+            return res.status(400).json({ message: `Minimum purchase of ₹${coupon.minimumPrice} required to use this coupon.` });
+        }
+
+        if (cart.couponRedeemed && cart.couponRedeemed.status) {
+            if (cart.couponRedeemed.coupon === couponCode) {
+                return res.status(400).json({ message: 'Coupon has already been redeemed for this cart.' });
+            }
+        }
+
+        const discountAmount = (cart.cartTotal * coupon.discount) / 100;
+        cart.finalAmount = cart.cartTotal - discountAmount;
+        if (coupon.userId.includes(userId)) {
+            return res.status(400).json({ message: 'Coupon has already been redeemed by this user.' });
+        } 
+
+
+        cart.couponRedeemed = {
+            status: true,
+            coupon: couponCode
+        };
+
+        cart.discount = discountAmount;
+        await cart.save();
+        return res.status(200).json({ message: 'Coupon applied successfully!' });
+
+    } catch (error) {
+        console.log("Error occurred in applyCoupon", error);
+        res.redirect('/cart/checkout');
+    }
+};
+
+
+const deleteCoupon = async (req,res) =>{
+    try {
+        const userId = req.session.user;
+        const cart = await Cart.findOne({userId:userId})
+        console.log(cart)   
+        cart.couponRedeemed.status = 'false';
+        cart.discount = 0;
+        cart.finalAmount = cart.cartTotal
+        cart.save();
+        return res.status(200).json({success:true})
+    } catch (error) {
+        console.log("Error occured in deleteCoupon",error)
+        res.redirect('/cart/checkout')
+    }
+}
+
+const loadWallet = async(req,res) =>{
+    try {
+        if(req.session.user){
+            const user = await User.findById(req.session.user)
+            res.render('wallet',{user,url:req.originalUrl})
+
+
+        }else{
+            req.session.errorMessage = "Oops! It seems you need to log in again.";
+            res.redirect('/');
+        }
+    } catch (error) {
+        console.log("Error occured in loadWallet",error)
+        res.redirect('/profile')
+    }
+}
 
 module.exports ={
     loadProfile,
-    updateProfile,
+    updateProfile, 
     LoadChangePassword,
     changePassword,
     loadAddress,
@@ -473,5 +593,9 @@ module.exports ={
     deleteImage,
     orders,
     orderDetails,
-    cancelOrder
+    returnOrder,
+    applyCoupon,
+    deleteCoupon,
+    loadCoupon,
+    loadWallet
 }

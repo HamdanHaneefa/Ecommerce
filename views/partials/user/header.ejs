@@ -22,7 +22,11 @@
     <!-- TOASTER CSS  -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
     <!-- SWEETALERT  -->
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- GOOGLE FONT  -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
 
 </head>
 
@@ -44,7 +48,7 @@
             </ul>
             <ul class="navbar-nav ml-auto icons">
                 <li class="nav-item">
-                    <a class="nav-link" href="wishlist.html">
+                    <a class="nav-link" href="/wishlist">
                         <img src="/user/images/Wishlist.svg" alt="Wishlist" class="icon">
                         Wishlist
                     </a>
@@ -88,3 +92,22 @@
             <button id="cancelLogout">No</button>
         </div>
     </div>
+
+    <script>
+        const logoutButton = document.getElementById('logoutButton');
+        const logoutModal = document.getElementById('logoutModal');
+        const confirmLogout = document.getElementById('confirmLogout');
+        const cancelLogout = document.getElementById('cancelLogout');
+        
+        logoutButton.onclick = (e) => {
+            e.preventDefault();
+            logoutModal.style.display = 'block';
+        };
+        
+        confirmLogout.onclick = () => window.location.href = '/logout';
+        cancelLogout.onclick = () => logoutModal.style.display = 'none';
+        
+        window.onclick = (event) => {
+            if (event.target === logoutModal) logoutModal.style.display = 'none';
+        };
+    </script>

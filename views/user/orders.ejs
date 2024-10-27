@@ -104,6 +104,7 @@
         font-size: 0.875rem; /* Slightly smaller font */
         cursor: pointer;
         transition: background-color 0.2s;
+        margin-right: 10px;
     }
 
     .returned-btn:hover {
@@ -126,6 +127,33 @@
             display: none; /* Hide headings on mobile */
         }
     }
+    .order-status {
+    font-weight: bold; /* Bold text for visibility */
+    text-transform: capitalize; /* Capitalize the first letter of each word */
+    font-size: 14px; /* Standard font size */
+}
+
+/* Status styles */
+.status-delivered {
+    color: #4CAF50; /* Green for Delivered */
+}
+
+.status-shipped {
+    color: #2196F3; /* Blue for Shipped */
+}
+
+.status-pending {
+    color: #FFC107; /* Amber for Pending */
+}
+
+.status-return-pending {
+    color: #FF9800; /* Orange for Return Pending */
+}
+
+.status-returned {
+    color: #4CAF50; /* Red for Returned */
+}
+
 </style>
 
 <div class="container-fluid">
@@ -167,9 +195,24 @@
             
                                 <!-- Status -->
                                 <div class="order-status">
-                                    <p class="mb-1"><%= orders[i].status %></p>
+                                    <% let statusClass; %>
+                                    <% if (orders[i].status === 'Delivered') { %>
+                                        <% statusClass = 'status-delivered'; %>
+                                    <% } else if (orders[i].status === 'Shipped') { %>
+                                        <% statusClass = 'status-shipped'; %>
+                                    <% } else if (orders[i].status === 'Pending') { %>
+                                        <% statusClass = 'status-pending'; %>
+                                    <% } else if (orders[i].status === 'Return Request') { %>
+                                        <% statusClass = 'status-return-pending'; %>
+                                    <% } else if (orders[i].status === 'Returned') { %>
+                                        <% statusClass = 'status-returned'; %>
+                                    <% } else { %>
+                                        <% statusClass = ''; %> <!-- Default class for other statuses, if needed -->
+                                    <% } %>
+                                    
+                                    <p class="mb-1 <%= statusClass %>"><%= orders[i].status %></p>
                                 </div>
-            
+ 
                                 <!-- Total Amount -->
                                 <div class="order-total-amount">
                                     <p class="mb-1">₹<%= orders[i].totalAmount %></p>
@@ -190,12 +233,19 @@
                                     <% if (orders[i].status === 'Cancelled') { %>
                                         <!-- Returned Button -->
                                         <button class="returned-btn" data-order-id="<%= orders[i]._id %>">Returned</button>
-                                    <% } else { %>
-                                        <!-- View Button -->
                                         <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
-            
-                                        <!-- Cancel Button -->
-                                        <button class="btn btn-danger btn-sm cancel-btn ml-2" data-order-id="<%= orders[i]._id %>">Cancel</button>
+                                    <% }
+                                    else if (orders[i].status === 'Return Request') { %>
+                                        <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
+                                        <button class="btn btn-danger btn-sm  ml-2" data-order-id="<%= orders[i]._id %>">Return Pending</button>
+                                    <% }
+                                    else if (orders[i].status === 'Returned') { %>
+                                        <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
+                                        <button class="btn btn-success btn-sm ml-2" data-order-id="<%= orders[i]._id %>">Returned</button>
+                                    <% }
+                                     else { %>
+                                        <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
+                                        <button class="btn btn-danger btn-sm cancel-btn ml-2" data-order-id="<%= orders[i]._id %>">Return</button>
                                     <% } %>
                                 </div>
                             </div>
@@ -224,8 +274,8 @@
             const orderId = $(this).data('order-id');
 
             Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
+                title: 'Confirmation Required',
+                text: "This action cannot be undone. Are you sure you want to proceed?",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -234,13 +284,13 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/cancel-order',
+                        url: '/return-order',
                         type: 'POST',
                         data: { orderId: orderId },
                         success: function(response) {
                             Swal.fire(
-                                'Canceled!',
-                                'Your order has been canceled.',
+                                'Return Request Submitted',
+                                'Your order has been successfully requested for return.',
                                 'success'
                             );
                             window.location.reload();
