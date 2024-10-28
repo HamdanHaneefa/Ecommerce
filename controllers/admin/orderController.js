@@ -31,7 +31,7 @@ const orderDetails = async (req,res) =>{
 
         let errorMessage = null;
         if (order.status === 'Cancelled') {
-            errorMessage = "You can't update the status once it is&nbsp;<strong>Returned</strong>.";
+            errorMessage = "You can't update the status once it is&nbsp;<strong>Cancelled</strong>.";
         } else if (order.status === 'Delivered') {
             errorMessage = "You can't update the status once it is&nbsp;<strong>Delivered</strong>.";
         }  else if (order.status === 'Returned') {
@@ -68,6 +68,7 @@ const changeStatus = async (req, res) => {
         const { orderId, status } = req.body;
         console.log(orderId, status);
         const order = await Order.findById(orderId);
+        const user = await User.findById(order.userId)
 
         const Status = status === 'pending' ? 'Pending' : status === 'shipped' ? 'Shipped' : status === 'delivered' ? 'Delivered' : status === 'approve' ? 'Returned' : status === 'decline' ? 'Return Cancelled' : null;
 
@@ -84,11 +85,23 @@ const changeStatus = async (req, res) => {
         if(order.status === 'Returned'){
             return res.status(400).json({success:false , message:"You can't update the status once it is Returned."})
         }
-       
+        if(Status == 'Returned'){
+            // console.log('USER TRANSACTION :',user.transaction)
+            // console.log('ORDER ID :',order._id)
+            let transaction = user.transaction.find(tx => tx.orderId.equals(order._id));
+            console.log(transaction)
+            transaction.status = true
+            if(transaction.type == 'Razorpay'){
+                user.wallet += transaction.amount
+                transaction.status = true
+            }
+            console.log(transaction)
+        }
         order.status = Status; 
-        console.log(order)
         await order.save();
+        await user.save()
         res.json({ success: true, status: Status });
+        console.log(Status)
     } catch (error) {
         console.error("Error occurred in changeStatus", error);
         res.status(500).json({ success: false, message: 'An error occurred while updating the order status.' });

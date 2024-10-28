@@ -63,6 +63,10 @@
         background-color: #ffc107; /* Yellow background for Pending */
     }
 
+    .badge-cancelled {
+    background-color: red; /* Red background for Cancelled */
+    }
+
     .badge-shipped {
         background-color: #007bff; /* Blue background for Shipped */
     }
@@ -166,7 +170,7 @@
                         </td>
                         <td><%= orderDetail.productName %></td>
                         <td>
-                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : order.status === 'Returned' ? 'badge-delivered' : 'badge-pending' %>">
+                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : order.status === 'Returned' ? 'badge-returned' : order.status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending' %>">
                                 <%= order.status %>
                             </span>                            
                         </td> <!-- Status Field -->

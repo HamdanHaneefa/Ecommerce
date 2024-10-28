@@ -58,6 +58,9 @@ const userSchema = new Schema({
         status: {
             type: Boolean
         },
+        orderId:{
+            type: Schema.Types.ObjectId,
+        },
         createOn: {
             type: Date,
             default: Date.now

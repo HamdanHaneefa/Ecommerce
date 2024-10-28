@@ -154,6 +154,9 @@
     color: #4CAF50; /* Red for Returned */
 }
 
+.status-cancelled {
+    color: red; /* Red for Cancelled */
+}
 </style>
 
 <div class="container-fluid">
@@ -172,7 +175,7 @@
             <div class="order-headings d-flex justify-content-between mb-2">
                 <div>Order ID</div>
                 <div>Status</div>
-                <div>Total Amount</div>
+                <div>Total Price</div>
                 <div>Items</div>
                 <div>Date</div>
                 <div>Actions</div>
@@ -206,16 +209,19 @@
                                         <% statusClass = 'status-return-pending'; %>
                                     <% } else if (orders[i].status === 'Returned') { %>
                                         <% statusClass = 'status-returned'; %>
+                                    <% } else if (orders[i].status === 'Cancelled') { %>
+                                        <% statusClass = 'status-cancelled'; %>
                                     <% } else { %>
-                                        <% statusClass = ''; %> <!-- Default class for other statuses, if needed -->
+                                        <% statusClass = ''; %> 
                                     <% } %>
-                                    
+                                
                                     <p class="mb-1 <%= statusClass %>"><%= orders[i].status %></p>
                                 </div>
- 
+                                
+
                                 <!-- Total Amount -->
                                 <div class="order-total-amount">
-                                    <p class="mb-1">₹<%= orders[i].totalAmount %></p>
+                                    <p class="mb-1">₹<%= orders[i].finalAmount %></p>
                                 </div>
             
                                 <!-- Items Count -->
@@ -231,8 +237,7 @@
                                 <!-- Actions (View/Cancel/Return) -->
                                 <div class="order-actions d-flex">
                                     <% if (orders[i].status === 'Cancelled') { %>
-                                        <!-- Returned Button -->
-                                        <button class="returned-btn" data-order-id="<%= orders[i]._id %>">Returned</button>
+                                        <button class="returned-btn" data-order-id="<%= orders[i]._id %>">Cancelled</button>
                                         <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
                                     <% }
                                     else if (orders[i].status === 'Return Request') { %>
@@ -243,9 +248,13 @@
                                         <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
                                         <button class="btn btn-success btn-sm ml-2" data-order-id="<%= orders[i]._id %>">Returned</button>
                                     <% }
+                                    else if (orders[i].status === 'Delivered') { %>
+                                        <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
+                                        <button class="btn btn-danger cancel-btn btn-sm ml-2" data-order-id="<%= orders[i]._id %>">Return</button>
+                                    <% }
                                      else { %>
                                         <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
-                                        <button class="btn btn-danger btn-sm cancel-btn ml-2" data-order-id="<%= orders[i]._id %>">Return</button>
+                                        <button class="btn btn-danger btn-sm cancel-btn ml-2" data-order-id="<%= orders[i]._id %>">Cancel</button>
                                     <% } %>
                                 </div>
                             </div>
@@ -288,6 +297,13 @@
                         type: 'POST',
                         data: { orderId: orderId },
                         success: function(response) {
+                            if(response.message){
+                                Swal.fire(
+                                'Return Request Submitted',
+                                response.message
+                            );
+                            window.location.reload();
+                            }
                             Swal.fire(
                                 'Return Request Submitted',
                                 'Your order has been successfully requested for return.',

@@ -164,7 +164,7 @@
                             ₹<%= (variant ? variant.salePrice : product.variants[0].salePrice) %>
                         </span>                        
                         <span class="offer-percentage" style="font-weight: bold; color: #28a745; margin-left: 10px; font-size: 1.3em;">
-                            <%= Math.round(((product.price - (variant ? variant.salePrice : product.variants[0].salePrice)) / product.price) * 100) %>%
+                            <%= product.effectiveOffer %>%
                             off
                         </span>
                     <% } else { %>
@@ -331,6 +331,7 @@
                     $('#zoomed-image').attr('src', '/uploads/variant-images/' + response.variant.images[0]);
                     $('.price span').text('₹' + response.variant.price);
                     $('.price-effective').text('₹' + response.variant.salePrice);
+                    $('.offer-percentage').text(response.effectiveOffer + '% off');
                     $("#wishlist-btn").attr('data-variant-id',variantId)
                     $('#wishlist-btn').css('display','block')
                     $('#wishlist-btn').toggleClass('active', response.isInWishlist);

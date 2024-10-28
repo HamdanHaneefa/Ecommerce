@@ -19,6 +19,7 @@ router.get('/pageError',adminController.pageNotFound)
 router.get('/login',adminController.loadLogin)
 router.post('/login',authController.login)
 router.get('/',adminAuth,adminController.loadDashboard)
+router.get('/reports', adminController.generateReport);
 router.get('/logout',authController.logout)
 
 

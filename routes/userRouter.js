@@ -26,8 +26,8 @@ router.get('/auth/google/callback',passport.authenticate('google',{failureRedire
         res.redirect('/')
     }
 }); 
-router.get('/login',userController.loadLogin) 
-router.post('/login',authController.login) 
+router.get('/login',userController.loadLogin)
+router.post('/login',authController.login)
 router.get("/logout",authController.logout)
 router.get('/forgot-password',userController.loadforget)
 router.post('/forgot-password',authController.forget)

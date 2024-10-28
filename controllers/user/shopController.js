@@ -106,10 +106,11 @@ const productInfo = async (req, res) => {
  
     if (req.xhr) {
       let active;
+      const effectiveOffer = product.effectiveOffer
       console.log('isInWishlist :',isInWishlist)
       isInWishlist ? active = 'remove' : active = 'add';
       console.log(active)
-      return res.json({ variant,isInWishlist ,active,user });
+      return res.json({ variant,isInWishlist ,active,user , effectiveOffer });
     }
    
     res.render("product-info", { user, product, variant, relatedproducts ,isInWishlist});

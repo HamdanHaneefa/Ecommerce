@@ -1,120 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallet Page</title>
-    <style>
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            padding: 0;
-        }
+<%- include("../../views/partials/user/header") %>
+<style>
+    body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f0f4f8;
+        margin: 0;
+        padding: 0;
+    }
 
-        .container-fluid {
-            padding: 1.5rem;
-        }
+    .container-fluid {
+        padding: 1.5rem;
+    }
 
-        /* Wallet container */
-        .wallet-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+    /* Wallet container */
+    .wallet-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 
-        /* Wallet balance card */
-        .wallet-balance {
-            background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ffcc00;
-        }
+    /* Wallet balance card */
+    .wallet-balance {
+        background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ffcc00;
+    }
 
-        .wallet-balance-title {
-            color: #cccccc;
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-        }
+    .wallet-balance-title {
+        color: #cccccc;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
 
-        /* Transaction headings */
-        .transaction-headings {
-            display: flex;
-            font-weight: bold;
-            padding: 0.75rem;
-            background-color: #f8f9fa;
-            border-radius: 12px;
-            margin-bottom: 0.5rem;
-        }
+    /* Transaction headings */
+    .transaction-headings {
+        display: flex;
+        font-weight: bold;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
+    }
 
-        .transaction-headings div {
-            flex: 1;
-            text-align: center;
-        }
+    .transaction-headings div {
+        flex: 1;
+        text-align: center;
+    }
 
-        /* Transaction card styles */
+    /* Transaction card styles */
+    .transaction-card {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        padding: 0.75rem;
+        background-color: white;
+        transition: transform 0.2s ease-in-out;
+        margin-bottom: 0.5rem;
+    }
+
+    .transaction-card:hover {
+        transform: scale(1.01);
+    }
+
+    .transaction-details {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
+    }
+
+    .transaction-details div {
+        flex: 1;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
         .transaction-card {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            padding: 0.75rem;
-            background-color: white;
-            transition: transform 0.2s ease-in-out;
-            margin-bottom: 0.5rem;
-        }
-
-        .transaction-card:hover {
-            transform: scale(1.01);
+            flex-direction: column;
+            align-items: flex-start;
         }
 
         .transaction-details {
-            flex: 1;
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
+            flex-direction: column;
+            align-items: flex-start;
         }
 
-        .transaction-details div {
-            flex: 1;
+        .transaction-headings {
+            display: none;
         }
 
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            .transaction-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .transaction-details {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .transaction-headings {
-                display: none;
-            }
-
-            .wallet-balance {
-                font-size: 1.5rem;
-                padding: 1rem;
-            }
-
-            .wallet-balance-title {
-                font-size: 0.9rem;
-            }
+        .wallet-balance {
+            font-size: 1.5rem;
+            padding: 1rem;
         }
-    </style>
-</head>
-<body>
 
-<%- include("../../views/partials/user/header") %>
-
+        .wallet-balance-title {
+            font-size: 0.9rem;
+        }
+    }
+</style>
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar include -->
@@ -127,56 +117,58 @@
             <div class="wallet-container">
                 <div class="wallet-balance">
                     <div class="wallet-balance-title">Wallet Balance</div>
-                    ₹269700.00
+                    ₹<%= walletBalance.toFixed(2) %> <!-- Dynamically show wallet balance -->
                 </div>
 
                 <!-- Headings for Transaction Details -->
                 <div class="transaction-headings d-flex justify-content-between mb-2">
                     <div>Transaction ID</div>
+                    <div>Payment Method</div>
                     <div>Amount</div>
                     <div>Date</div>
                     <div>Status</div>
                 </div>
 
-                <!-- Transaction List with Dummy Data -->
-                <div class="transaction-list">
-                    <div class="transaction-card d-flex align-items-center p-2">
-                        <div class="transaction-details d-flex justify-content-between w-100">
-                            <div class="transaction-id">
-                                <p class="mb-1">TXN12345</p>
+                <!-- Transaction List or No Transactions Message -->
+                <% if (transactions.length > 0) { %>
+                    <div class="transaction-list">
+                        <% transactions.forEach(transaction => { %>
+                            <div class="transaction-card d-flex align-items-center p-2">
+                                <div class="transaction-details d-flex justify-content-between w-100">
+                                    <div class="transaction-id">
+                                        <p class="mb-1"><%= transaction._id %></p> <!-- Use _id as Transaction ID -->
+                                    </div>
+                                    <div class="transaction-type">
+                                        <p class="mb-1"><%= transaction.type %></p>
+                                    </div>
+                                    <div class="transaction-amount">
+                                        <p class="mb-1">₹<%= transaction.amount.toFixed(2) %></p>
+                                    </div>
+                                    <div class="transaction-date">
+                                        <p class="mb-1"><%= transaction.createOn.toLocaleDateString() %></p>
+                                    </div>
+                                    <div class="transaction-status">
+                                        <p class="mb-1 <%= transaction.status ? 'text-success' : 'text-danger' %> font-weight-bold">
+                                            <%= transaction.status ? 'Completed' : 'Pending' %>
+                                        </p>
+                                    </div>                               
+                                </div>
                             </div>
-                            <div class="transaction-amount">
-                                <p class="mb-1">₹200.00</p>
-                            </div>
-                            <div class="transaction-date">
-                                <p class="mb-1">10/15/2023</p>
-                            </div>
-                            <div class="transaction-status">
-                                <p class="mb-1">Completed</p>
-                            </div>
-                        </div>
+                        <% }) %>
                     </div>
-                    <div class="transaction-card d-flex align-items-center p-2">
-                        <div class="transaction-details d-flex justify-content-between w-100">
-                            <div class="transaction-id">
-                                <p class="mb-1">TXN67890</p>
-                            </div>
-                            <div class="transaction-amount">
-                                <p class="mb-1">₹150.00</p>
-                            </div>
-                            <div class="transaction-date">
-                                <p class="mb-1">10/20/2023</p>
-                            </div>
-                            <div class="transaction-status">
-                                <p class="mb-1">Pending</p>
-                            </div>
-                        </div>
+                <% } else { %>
+                    <!-- No Transactions Message -->
+                    <div class="text-center text-muted mt-4">
+                        <p>No transactions to display.</p>
                     </div>
-                </div>
+                <% } %>
             </div>
         </div>
     </div>
 </div>
+
+
+
 
 </body>
 </html>

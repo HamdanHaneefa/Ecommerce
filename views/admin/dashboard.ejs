@@ -1,90 +1,312 @@
 <%- include("../../views/partials/admin/header") %>
 
-<div class="container-fluid">
-  <div class="row">
+<style>
+  /* Reset some default styles for a more consistent look */
+  body {
+    margin: 0;
+    font-family: 'Arial', sans-serif; /* Updated font for better readability */
+    background-color: #f9f9f9; /* Light background for contrast */
+  }
+
+  .dashboard-container {
+    width: 100%;
+    padding: 20px; /* Added padding for better spacing */
+    margin: 0 auto; /* Centering the dashboard */
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 2px solid #ddd; /* Thicker border for emphasis */
+  }
+
+  h1.h3 {
+    margin: 0; /* Remove margin for uniformity */
+  }
+
+  /* Card Styles */
+  .card {
+    border-radius: 15px; /* Softer corners */
+    color: white;
+    transition: transform 0.2s, box-shadow 0.2s; /* Added transition for hover effects */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  }
+
+  .card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+  }
+
+  /* Reverting back to original colors */
+  .sales-count-card {
+    background: linear-gradient(135deg, #c1c5d9, #5a7f66, #3b3b3b); /* Original color */
+  }
+
+  .order-amount-card {
+    background: linear-gradient(135deg, #a3c1e0, #4b8da8, #2f4c57); /* Original color */
+  }
+
+  .discount-card {
+    background: linear-gradient(135deg, #d4c300, #7d5c2c, #3e3b3b); /* Original color */
+  }
+
+  .card-body {
+    padding: 20px; /* Increased padding for better spacing */
+    text-align: center;
+  }
+
+  .report-generator {
+    max-width: 400px; /* Increased width for better usability */
+    padding: 20px;
+    border-radius: 15px; /* Softer corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    margin-top: 20px; /* Increased margin for separation */
+  }
+
+  .report-generator h1 {
+    font-size: 1.5rem; /* Larger font for better visibility */
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+
+  .report-generator select,
+  .report-generator button {
+    width: 100%;
+    padding: 12px; /* Increased padding for better clickability */
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 1rem; /* Slightly larger font */
+    margin-top: 10px;
+    transition: border 0.3s; /* Smooth transition for focus effects */
+  }
+
+  .report-generator select:focus,
+  .report-generator button:focus {
+    border-color: #007bff; /* Highlight on focus */
+    outline: none; /* Remove default outline */
+  }
+
+  .report-generator button {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    font-weight: bold;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.2s; /* Smooth transitions */
+  }
+
+  .report-generator button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Lift effect on hover */
+  }
+
+  .sales-report-section {
+    display: none; /* Hidden by default */
+    margin-top: 30px; /* Increased margin for separation */
+  }
+
+  .dashboard-title {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333; /* Darker title for contrast */
+  }
+
+  .button-group {
+    margin-top: 20px; /* Increased margin for separation */
+  }
+
+  .button-group .btn {
+    width: 48%;
+    margin-right: 2%;
+    transition: transform 0.2s; /* Transition for hover effects */
+  }
+
+  .button-group .btn:hover {
+    transform: translateY(-2px); /* Lift effect on hover */
+  }
+
+  .button-group .btn:last-child {
+    margin-right: 0;
+  }
+</style>
 
 
-    <!-- Main content -->
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Dashboard</h1>
-      </div>
 
-      <!-- Cards for quick stats -->
+
+<div class="dashboard-container">
+  <div class="row" style="margin: 0;">
+    <!-- Dashboard Heading -->
+    <div class="dashboard-header">
+      <h1 class="h3">Dashboard</h1>
+    </div>
+    <div class="container mt-4">
+      <h1>Dashboard</h1>
       <div class="row">
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card bg-primary text-white shadow">
-            <div class="card-body">
-              Users
-              <div class="mt-2">500</div>
-            </div>
+          <!-- Sales Count -->
+          <div class="col-md-4 mb-3">
+              <div class="card sales-count-card">
+                  <div class="card-body">
+                      <h5 style="font-size: 0.75rem; margin-bottom: 0.3rem;">Overall Sales Count</h5>
+                      <h3 style="font-size: 1.3rem; font-weight: bold;"><%= stats.salesCount %></h3>
+                  </div>
+              </div>
           </div>
-        </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card bg-success text-white shadow">
-            <div class="card-body">
-              Active Users
-              <div class="mt-2">320</div>
-            </div>
+          <!-- Order Amount -->
+          <div class="col-md-4 mb-3">
+              <div class="card order-amount-card">
+                  <div class="card-body">
+                      <h5 style="font-size: 0.75rem; margin-bottom: 0.3rem;">Overall Order Amount</h5>
+                      <h3 style="font-size: 1.3rem; font-weight: bold;"><%= stats.totalOrderAmount.toFixed(2) %></h3>
+                  </div>
+              </div>
           </div>
-        </div>
 
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card bg-warning text-white shadow">
-            <div class="card-body">
-              Pending Requests
-              <div class="mt-2">12</div>
-            </div>
+          <!-- Discount -->
+          <div class="col-md-4 mb-3">
+              <div class="card discount-card">
+                  <div class="card-body">
+                      <h5 style="font-size: 0.75rem; margin-bottom: 0.3rem;">Overall Discount</h5>
+                      <h3 style="font-size: 1.3rem; font-weight: bold;"><%= stats.totalDiscount.toFixed(2) %></h3>
+                  </div>
+              </div>
           </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="card bg-danger text-white shadow">
-            <div class="card-body">
-              Issues Reported
-              <div class="mt-2">5</div>
-            </div>
-          </div>
-        </div>
       </div>
-
-      <!-- Table for latest user activity -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <i class="fas fa-table me-1"></i>
-          Latest User Activity
-        </div>
-        <div class="card-body">
-          <table class="table table-bordered table-hover">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>User</th>
-                <th>Action</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>John Doe</td>
-                <td>Logged in</td>
-                <td>2024-09-13</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>Jane Smith</td>
-                <td>Updated Profile</td>
-                <td>2024-09-12</td>
-              </tr>
-              <!-- Add more dummy rows here -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
   </div>
+
+
+  <!-- Sales Report Generator Section -->
+<div class="report-generator">
+  <h1>Sales Report Generator</h1>
+  <label for="reportType">Select Report Type:</label>
+  <select id="reportType" name="reportType">
+      <option value="">-- Select Report Type --</option>
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+  </select>
+  <button type="button" id="generateReportButton">Generate Report</button>
 </div>
+
+<!-- Sales Report Section -->
+<!-- <div id="reportTableContainer" class="sales-report-section" style="display: none;">
+  <h3 class="dashboard-title">Sales Report</h3>
+  <table id="reportTable" class="table table-striped table-bordered">
+      <thead class="table-dark">
+          <tr>
+              <th>Order ID</th>
+              <th>User</th>
+              <th>Total Amount</th>
+              <th>Discount</th>
+              <th>Final Amount</th>
+              <th>Status</th>
+              <th>Payment</th>
+              <th>Created At</th>
+          </tr>
+      </thead>
+      <tbody id="reportData">
+
+      </tbody>
+  </table>
+  <div class="button-group">
+      <button id="downloadPdf" class="btn btn-primary downloadPdfbtn" style="display: none;">Download PDF</button>
+      <button id="downloadExcel" class="btn btn-success downloadExcelbtn" style="display: none;">Download Excel</button>
+  </div>
+</div> -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<script>
+  document.getElementById('generateReportButton').addEventListener('click', function() {
+    const reportType = document.getElementById('reportType').value;
+    const reportSection = document.getElementById('reportTableContainer');
+    const downloadPdfButton = document.getElementById('downloadPdf');
+    const downloadExcelButton = document.getElementById('downloadExcel');
+    
+    console.log(reportType);
+    if (reportType) {
+        reportSection.style.display = 'block';
+        
+        // Show download buttons
+        downloadPdfButton.style.display = 'inline-block';
+        downloadExcelButton.style.display = 'inline-block';
+
+        fetch(`/admin/reports?reportType=${reportType}`)
+            .then(response => response.json())
+            .then(data => {
+                const reportData = document.getElementById('reportData');
+                reportData.innerHTML = ''; 
+                data.forEach(order => {
+                    const row = `
+                        <tr>
+                            <td>${order.orderId}</td>
+                            <td>${order.userName}</td>
+                            <td>${order.totalAmount.toFixed(2)}</td>
+                            <td>${order.discount.toFixed(2)}</td>
+                            <td>${order.finalAmount.toFixed(2)}</td>
+                            <td>${order.status}</td>
+                            <td>${order.paymentMethod}</td>
+                            <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                    reportData.innerHTML += row;
+                });
+            })
+            .catch(error => console.error('Error fetching report data:', error));
+    } else {
+        alert('Please select a report type.');
+        reportSection.style.display = 'none';
+        
+        // Hide download buttons
+        downloadPdfButton.style.display = 'none';
+        downloadExcelButton.style.display = 'none';
+    }
+});
+
+// PDF download logic
+document.getElementById('downloadPdf').addEventListener('click', function() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(12);
+    doc.text("Sales Report", 14, 10);
+    doc.autoTable({
+        head: [['Order ID', 'User', 'Total Amount', 'Discount', 'Final Amount', 'Status', 'Payment', 'Created At']],
+        body: Array.from(document.querySelectorAll('#reportData tr')).map(row => {
+            return Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
+        })
+    });
+
+    doc.save('sales-report.pdf');
+});
+
+// Excel download logic
+document.getElementById('downloadExcel').addEventListener('click', function() {
+    const workbook = XLSX.utils.book_new();
+    const worksheetData = [];
+    
+    // Get header
+    const headers = ['Order ID', 'User', 'Total Amount', 'Discount', 'Final Amount', 'Status', 'Payment', 'Created At'];
+    worksheetData.push(headers);
+
+    // Get rows data
+    document.querySelectorAll('#reportData tr').forEach(row => {
+        const rowData = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
+        worksheetData.push(rowData);
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
+    
+    XLSX.writeFile(workbook, 'sales-report.xlsx');
+});
+
+</script>
+
 
 <%- include("../../views/partials/admin/footer") %>

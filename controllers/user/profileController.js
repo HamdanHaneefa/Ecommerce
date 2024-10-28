@@ -1,5 +1,6 @@
 const User = require("../../models/userSchema");
 const Address = require('../../models/addressSchema');
+
 const Order = require('../../models/orderSchema')
 const Coupon = require('../../models/couponSchema');
 const Cart = require('../../models/cartSchema');
@@ -373,8 +374,7 @@ const orders = async (req,res) =>{
         const userId = req.session.user; 
         const user = await User.findById(userId)
         const orders = await Order.find({})
-        .populate({ path: 'orderedItems.product', model: 'Product' })     
-        console.log(orders)
+        .populate({ path: 'orderedItems.product', model: 'Product' })
 
         res.render('orders', { orders, err_msg: null,user, url:req.originalUrl}); 
   
@@ -443,13 +443,59 @@ const returnOrder = async (req,res) =>{
     try {
         if(req.session.user){
             const {orderId} = req.body
-            const order = await Order.findById(orderId)
-            if(order.status === 'Returned'){
+            const order = await Order.findById(orderId).populate('orderedItems.product')
+            const user = await User.findById(req.session.user);
+            //Cancel order
+            if(order.status === 'Pending'){
+                for(let item of order.orderedItems){
+                    const product = item.product
+                    const variant = product.variants.id(item.variantId);
+                    variant.stock += item.quantity;
+                    order.status = 'Cancelled';
+                
+                    const transaction = {
+                        type: order.paymentMethod,
+                        amount: order.finalAmount,
+                        orderId: order._id,
+                        status: true
+                    };
+
+                    
+                    user.wallet += order.finalAmount; 
+                    user.transaction = user.transaction || [];
+                    user.transaction.push(transaction);
+
+                    console.log('USER :',user)
+                    console.log('ORDER :',order)
+                    await product.save();
+                    await order.save();
+                    await user.save();
+                    return res.status(400).json({success:true , message:"Your order is currently in a return request. Status updates are not available at this stage."})
+                }
+            }
+
+            //Return order
+            if(order.status === 'Delivered'){
+                order.status = 'Return Request';
+
+                    const transaction = {
+                        type: order.paymentMethod,
+                        amount: order.finalAmount,
+                        status: false,
+                        orderId: order._id
+                    };
+                user.transaction = user.transaction || [];
+                user.transaction.push(transaction);
+                console.log(user)
+                order.save();
+                user.save();
+                return res.status(200).json({ message: 'Order cancelled successfully.' });
+            }
+           
+            if(order.status === 'Returned'){   
                 return res.status(400).json({success:false , message:"Your order is currently in a return request. Status updates are not available at this stage."})
             }
-            order.status = 'Return Request';
-            order.save();
-            return res.json({success:true});  
+            
         }else{
             res.redirect('/')
         }
@@ -567,8 +613,12 @@ const loadWallet = async(req,res) =>{
     try {
         if(req.session.user){
             const user = await User.findById(req.session.user)
-            res.render('wallet',{user,url:req.originalUrl})
-
+            res.render('wallet', {
+                walletBalance: user.wallet,
+                transactions: user.transaction,
+                user,
+                url:req.originalUrl
+            });
 
         }else{
             req.session.errorMessage = "Oops! It seems you need to log in again.";
