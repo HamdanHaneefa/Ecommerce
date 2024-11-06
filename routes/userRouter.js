@@ -37,7 +37,6 @@ router.get('/change-password',userController.LoadChangePassword)
 router.post('/change-password',authController.changePassword)
 
 
-
 //SHOP
 router.get('/shop',shopController.loadShop)
 router.get('/product/:id',shopController.productInfo)
@@ -91,6 +90,9 @@ router.delete('/delete-coupon',profileController.deleteCoupon)
 
 //WALLET
 router.get('/wallet',profileController.loadWallet)
+
+//INVOICE
+router.get('/download-invoice/:orderId', shopController.generateInvoicePDF)
 
 
 

@@ -213,22 +213,20 @@ const login = async (req, res) => {
 }; 
  
  
-const logout = async (req,res) =>{
-    try {
-      req.session.destroy((err)=>{
-        if(err){
-          console.log("Session desstruction error :",err.message)
-          return res.redirect("/pageNotFound")
-        }
-        console.log("Destroy Success")
-        return res.redirect("/")
-       
-      })
-    } catch (error) {
-      console.log("Logout Error ",error)
-      res.redirect("/pageNotFound")
-    }
+const logout = async (req, res) => {
+  try {
+      if (req.session && req.session.user) {
+          req.session.user = null;
+          console.log("User session cleared");
+      }
+      return res.redirect("/");
+      
+  } catch (error) {
+      console.log("Logout Error", error);
+      res.redirect("/pageNotFound");
+  }
 }
+
 
 const forget = async (req,res) =>{
   try {

@@ -1,14 +1,16 @@
 const User = require("../../models/userSchema");
 const Address = require('../../models/addressSchema');
-
 const Order = require('../../models/orderSchema')
 const Coupon = require('../../models/couponSchema');
 const Cart = require('../../models/cartSchema');
+const Product = require('../../models/productSchema');
 const path = require('path')
 const fs = require('fs')
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const { overwriteMiddlewareResult } = require("mongoose");
+const axios = require('axios');
+const Razorpay = require('razorpay');
 
 
 
@@ -207,74 +209,118 @@ const loadAddAddress = async (req,res) =>{
         res.redirect('/')
     }
 }
+
 const addAddress = async (req, res) => {
     try {
         const userId = req.session.user;
-        const { name, phone, street, city, state, zip, country } = req.body; 
+        const { name, phone, street, city, state, zip, country } = req.body;
 
         const namePattern = /^[a-zA-Z\s]+$/;
         const phonePattern = /^[0-9]{10}$/;
         const zipPattern = /^[0-9]{5,10}$/;
 
         // Validate required fields
-        if (!name || !street || !city || !state || !country ) { 
+        if (!name || !street || !city || !state || !country) {
             req.flash("err_msg", "All fields are required.");
-            console.log("Error in all fields");
+            console.log("Error: All fields are required.");
             return res.redirect("/address/add-address");
         }
 
         // Validate name format
         if (!namePattern.test(name)) {
             req.flash("err_msg", "Name can only contain letters and spaces.");
-            console.log("Error in namePattern");
+            console.log("Error: Invalid name format.");
             return res.redirect("/address/add-address");
         }
 
         // Validate phone number format
         if (!phonePattern.test(phone)) {
             req.flash("err_msg", "Phone number must be exactly 10 digits.");
-            console.log("Error in phonePattern");
+            console.log("Error: Invalid phone number format.");
             return res.redirect("/address/add-address");
         }
 
         // Validate zip code format
         if (!zipPattern.test(zip)) {
             req.flash("err_msg", "Zip code must be between 5 and 10 digits.");
-            console.log("Error in zipPattern");
+            console.log("Error: Invalid zip code format.");
             return res.redirect("/address/add-address");
         }
 
+        let additionalAddress = [];
+        if (zip) {
+            // Adjust the URL for Nominatim API
+            const url = `https://nominatim.openstreetmap.org/search?postalcode=${zip}&countrycodes=IN&format=json`;
+            try {
+                const response = await axios.get(url);
+                const data = response.data;
+        
+                // Checking if API returned data
+                if (data && data.length > 0) {
+                    const { display_name: placeName, lon: longitude, lat: latitude } = data[0];
+                    console.log(placeName, longitude, latitude);
+                    additionalAddress.push({ placeName, longitude, latitude });
+                } else {
+                    req.flash("err_msg", "No places found for this ZIP code.");
+                    return res.redirect("/address/add-address");
+                }
+            } catch (apiError) {
+                console.log("Error fetching data from Nominatim API:", apiError.message);
+                req.flash("err_msg", "Invalid ZIP code. Please try again.");
+                return res.redirect("/address/add-address");
+            }
+        }
+        
+        const { placeName = '', longitude = '', latitude = '' } = additionalAddress[0] || {};
 
+        // Create the new address object
         const newAddress = {
             name,
             phone,
             street,
             city,
             state,
-            zipcode: zip, 
-            country
+            zipcode: zip,
+            country,
+            placeName,
+            longitude,
+            latitude
         };
-
+        console.log(newAddress)
         let userAddress = await Address.findOne({ userId });
 
         if (!userAddress) {
             userAddress = new Address({
                 userId,
-                addresses: [newAddress] 
+                addresses: [newAddress]
             });
         } else {
+            const addressExists = userAddress.addresses.some(
+                addr => addr.name === newAddress.name
+            );
+            
+            if (addressExists) {
+                req.flash("err_msg", "This address name already exists.");
+                return res.redirect("/address/add-address");
+            }
             userAddress.addresses.push(newAddress);
         }
 
-        // Save the userAddress
-        const savedAddress = await userAddress.save();
-        return res.redirect('/address')
-        
+        // Save the updated user address
+        await userAddress.save();
+        console.log("Address saved succefully")
+        req.flash("success_msg", "Address added successfully!");
+        return res.redirect('/address');
+
     } catch (error) {
-        console.log("Error occurred in addAddress", error);
-        res.redirect('/')
+        console.log("Error occurred in addAddress:", error);
+        req.flash("err_msg", "An unexpected error occurred. Please try again.");
+        return res.redirect('/address/add-address');
     }
 };
+
+
+
 
 const removeAddress = async (req, res) => {
     try {
@@ -397,10 +443,9 @@ const orders = async (req,res) =>{
 
             const order = await Order.findById(orderId)
             .populate({ path: 'orderedItems.product', model: 'Product' })
-            
-            const address = await Address.findOne({userId:order.userId})
-            const addressDetail = address.addresses.id(order.address)
-
+            console.log("ORDER :",order)
+            const addressDetail = order.address
+            console.log('ADDRESS DETAIL :',addressDetail)
             
             const orderDetails = order.orderedItems.map(item => {
                 const variant = item.product.variants.id(item.variantId); 
@@ -418,13 +463,13 @@ const orders = async (req,res) =>{
                 };
             });
 
-            console.log('ORDER DETAILS : ',orderDetails);
+            // console.log('ORDER DETAILS : ',orderDetails);
 
             res.render('order-details', {    
                 user, 
                 orderDetails,
                 addressDetail,
-                order,  
+                order,
                 orderId,
                 url: req.originalUrl
             });
@@ -438,21 +483,34 @@ const orders = async (req,res) =>{
         res.redirect('/orders');
     }
 };
+// Razorpay instance 
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID, 
+    key_secret: process.env.RAZORPAY_SECRET_KEY, 
+})
 
-const returnOrder = async (req,res) =>{
+const returnOrder = async (req, res) => {
     try {
-        if(req.session.user){
-            const {orderId} = req.body
-            const order = await Order.findById(orderId).populate('orderedItems.product')
+        if (req.session.user) {
+            const { orderId } = req.body;
+            const order = await Order.findById(orderId).populate('orderedItems.product');
+
+            if (!order) {
+                return res.status(404).json({ success: false, message: "Order not found." });
+            }
+
             const user = await User.findById(req.session.user);
-            //Cancel order
-            if(order.status === 'Pending'){
-                for(let item of order.orderedItems){
-                    const product = item.product
+
+            // Cancel order
+            if (order.status === 'Pending') {
+                for (let item of order.orderedItems) {
+                    const product = item.product;
                     const variant = product.variants.id(item.variantId);
                     variant.stock += item.quantity;
+
+                    // Update order status
                     order.status = 'Cancelled';
-                
+
                     const transaction = {
                         type: order.paymentMethod,
                         amount: order.finalAmount,
@@ -460,50 +518,95 @@ const returnOrder = async (req,res) =>{
                         status: true
                     };
 
-                    
-                    user.wallet += order.finalAmount; 
+                    user.wallet += (order.paymentMethod === 'Cash On Delivery') ? 0 : order.finalAmount;
                     user.transaction = user.transaction || [];
                     user.transaction.push(transaction);
 
-                    console.log('USER :',user)
-                    console.log('ORDER :',order)
+                    // Save changes
                     await product.save();
                     await order.save();
                     await user.save();
-                    return res.status(400).json({success:true , message:"Your order is currently in a return request. Status updates are not available at this stage."})
+                    return res.status(200).json({ success: true, message: "Your order has been cancelled. Status updates are not available at this stage." });
+                }
+
+            }
+
+            // Return order
+            if (order.status === 'Delivered') {
+                order.status = 'Return Request';
+
+                const transaction = {
+                    type: order.paymentMethod,
+                    amount: order.finalAmount,
+                    status: false,
+                    orderId: order._id
+                };
+                user.transaction = user.transaction || [];
+                user.transaction.push(transaction);
+
+                // Save changes
+                await order.save();
+                await user.save();
+
+                return res.status(200).json({ success: true, message: 'Return request initiated successfully.' });
+            }
+
+            if (order.status === 'Returned') {
+                return res.status(400).json({ success: false, message: "Your order is currently in a return request. Status updates are not available at this stage." });
+            }
+
+            if (order.status === 'Failed') {
+                // Check the quantity exists
+                for (const item of order.orderedItems) {
+                    const product = await Product.findById(item.product);
+                    const variant = product.variants.id(item.variantId); 
+                    console.log( variant.stock , item.quantity)
+
+                    if (variant && variant.stock < item.quantity || !variant.isActive ) {
+                        order.status = 'Cancelled';
+                        order.save();
+                        return res.status(400).json({ success: false,   message: "Sorry, this product is currently unavailable or has been deactivated." });
+                    }
+                  }
+                const options = {
+                    amount: Math.round(order.finalAmount * 100), 
+                    currency: 'INR',
+                    receipt: `receipt_${order._id}`,
+                    notes: {
+                        userId: req.session.user, 
+                        orderId: order._id, 
+                    },
+                }
+                // Create Razorpay order
+                try {
+                    const razorpayOrder = await razorpay.orders.create(options);
+                    order.paymentMethod = 'Razorpay';
+                    order.paymentStatus = false;
+                    order.orderId = razorpayOrder.id;
+                    // Save order
+                    await order.save();
+                    return res.status(201).json({
+                        success: true,
+                        message: "Order placed successfully.",
+                        order,
+                        razorpayOrder,
+                        razorpayOrderId: razorpayOrder.id
+                    });
+                } catch (error) {
+                    console.error("Error creating Razorpay order:", error);
+                    return res.status(500).json({ success: false, error: "Failed to create Razorpay order." });
                 }
             }
 
-            //Return order
-            if(order.status === 'Delivered'){
-                order.status = 'Return Request';
-
-                    const transaction = {
-                        type: order.paymentMethod,
-                        amount: order.finalAmount,
-                        status: false,
-                        orderId: order._id
-                    };
-                user.transaction = user.transaction || [];
-                user.transaction.push(transaction);
-                console.log(user)
-                order.save();
-                user.save();
-                return res.status(200).json({ message: 'Order cancelled successfully.' });
-            }
-           
-            if(order.status === 'Returned'){   
-                return res.status(400).json({success:false , message:"Your order is currently in a return request. Status updates are not available at this stage."})
-            }
-            
-        }else{
-            res.redirect('/')
+        } else {
+            res.redirect('/');
         }
     } catch (error) {
-        console.log("Error occured in cancelOrder",error)
-        res.redirect('/orders')
+        console.log("Error occurred in returnOrder:", error);
+        res.redirect('/orders');
     }
-}
+};
+
 
 const loadCoupon = async (req,res) =>{
     try {
@@ -549,8 +652,6 @@ const applyCoupon = async (req, res) => {
         const userId = req.session.user;
         const cart = await Cart.findOne({ userId });
         const user = await User.findById(userId);
-
-       
 
         if (!cart) {
             return res.status(400).json({ message: 'Cart not found.' });

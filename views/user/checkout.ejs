@@ -68,7 +68,7 @@
                     <div class="form-group mt-3">
                         <label for="existingAddresses" style="font-size: 0.85rem;">Select Existing Address</label>
                         <% if (addresses && addresses.length > 0) { %>
-                            <select id="existingAddresses" class="form-control" style="font-size: 0.85rem;">
+                            <select id="existingAddresses" class="form-control" style="font-size: 0.85rem;" onchange="fetchAddressDetails()">
                                 <option value="">Select an address</option>
                                 <% addresses.forEach(address => { %>
                                     <option value="<%= address.id %>">
@@ -103,6 +103,15 @@
                                 <div class="radio">
                                     <label style="font-size: 0.85rem;">
                                         <input type="radio" name="paymentMethod" value="Razorpay" class="mr-2" required> Razorpay
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <div class="radio">
+                                    <label style="font-size: 0.85rem;">
+                                        <input type="radio" name="paymentMethod" value="wallet" class="mr-2" required> Wallet
                                     </label>
                                 </div>
                             </div>
@@ -185,7 +194,7 @@
                             <!-- Coupon Offer (Default: None) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Coupon Offer</span>
-                                <span style="color: green;">-₹<%= userCart.discount %></span>
+                                <span style="color: green;">₹<%= userCart.discount %></span>
                             </h5>
 
                             <!-- Order Total (Same as Cart Subtotal for now) -->
@@ -197,14 +206,14 @@
                             <!-- Delivery Charge (Default: 0) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Delivery Charge</span>
-                                <span  style="color: green;">FREE</span>
+                                <span  style="color: green;" id="deliveryCharge">0</span>
                             </h5>
                         </div>
 
                         <!-- Final Total -->
                         <div class="d-flex justify-content-between mt-2">
                             <strong>Total:</strong>
-                            <span>₹<%= userCart.finalAmount %></span>
+                            <span id="finalAmount">₹<%= userCart.finalAmount %></span>
                         </div>
                         </div>
                     </div>
@@ -227,104 +236,149 @@
 
 <script>
     document.getElementById('placeOrderBtn').addEventListener('click', async () => {
-    const selectedAddress = document.getElementById('existingAddresses').value;
-    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+        // Retrieve selected address and payment method
+        const selectedAddress = document.getElementById('existingAddresses').value;
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
 
-    if (!paymentMethod) {
-        toastr.error('Please select a payment method.', "Error");
-        return;
-    }
+        // Validate payment method selection
+        if (!paymentMethod) {
+            toastr.error('Please select a payment method.', "Error");
+            return;
+        }
 
-    const paymentMethodValue = paymentMethod.value;
+        const paymentMethodValue = paymentMethod.value;
 
-    if (!selectedAddress) {
-        toastr.error('Please select an address.', "Error");
-        return;
-    }
+        // Validate address selection
+        if (!selectedAddress) {
+            toastr.error('Please select an address.', "Error");
+            return;
+        }
 
-    const orderData = {
-        addressId: selectedAddress,
-        paymentMethod: paymentMethodValue,
-    };
-    console.log(orderData)
-    $.ajax({
-        url: '/cart/checkout/place-order',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(orderData),
-        success: function(responseData) {
-            console.log('Order placed successfully:', responseData);
+        // Prepare order data
+        const orderData = {
+            addressId: selectedAddress,
+            paymentMethod: paymentMethodValue,
+        };
+        console.log('Order Data:', orderData);
 
-            if (paymentMethodValue === 'Razorpay') {
-                const options = {
-                    key: 'rzp_test_HSlU3uymqrTahm',
-                    amount: responseData.order.finalAmount * 100,
-                    currency: 'INR',
-                    name: 'VocalGear',
-                    description: 'Order ID: ' + responseData.order.razorpayOrderId,
-                    order_id: responseData.razorpayOrderId,
-                    handler: function(response) {
-                        $.ajax({
-                            url: '/cart/checkout/verify-payment',
-                            type: 'POST',
-                            contentType: 'application/json',
-                            data: JSON.stringify({
-                                razorpay_order_id: responseData.order.razorpayOrderId,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature
-                            }),
-                            success: function(verifyResponse) {
-                                if (verifyResponse.success) {
-                                    Swal.fire({
-                                        title: 'Success!',
-                                        text: 'Payment verified! Your order has been placed.',
-                                        icon: 'success',
-                                        confirmButtonText: 'Okay'
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
+        // PLACE ORDER
+        $.ajax({
+            url: '/cart/checkout/place-order',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function(responseData) {
+                // Check if payment method is Razorpay
+                if (paymentMethodValue === 'Razorpay') {
+                    const options = {
+                        key: 'rzp_test_HSlU3uymqrTahm',
+                        amount: responseData.order.finalAmount * 100, 
+                        currency: 'INR',
+                        name: 'VocalGear',
+                        description: 'Order ID: ' + responseData.order._id,
+                        order_id: responseData.razorpayOrderId,
+
+                        // Success handler
+                        handler: function(response) {
+                            // On successful payment, send payment details for verification
+                            $.ajax({
+                                url: '/cart/checkout/verify-payment',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature
+                                }),
+                                success: function(verifyResponse) {
+                                    if (verifyResponse.success) {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: 'Payment verified! Your order has been placed.',
+                                            icon: 'success',
+                                            confirmButtonText: 'Okay'
+                                        }).then(() => {
                                             window.location.href = '/orders';
-                                        }
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Verification Failed',
+                                            text: 'Payment verification failed. Please contact support.',
+                                            icon: 'error',
+                                            confirmButtonText: 'Okay'
+                                        });
+                                    }
+                                },
+                                error: function(xhr) {
+                                    Swal.fire({
+                                        title: 'Verification Error',
+                                        text: 'An error occurred while verifying payment. Please contact support.',
+                                        icon: 'error',
+                                        confirmButtonText: 'Okay'
                                     });
-                                } else {
-                                    toastr.error("Payment verification failed. Please contact support.", "Error");
                                 }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('Error verifying payment:', error);
-                                toastr.error("Error verifying payment. Please contact support.", "Error");
+                            });
+                        },
+                        // Failure or cancellation handler
+                        modal: {
+                            ondismiss: function() {
+                                $.ajax({
+                                    url: '/cart/checkout/verify-payment',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({
+                                        razorpay_order_id: responseData.razorpayOrderId,
+                                        status: 'cancelled' 
+                                    }),
+                                    complete: function() {
+                                        // Redirect to /orders page after cancellation
+                                        window.location.href = '/orders';
+                                    },
+                                    error: function(xhr) {
+                                        console.error('Error updating payment cancellation:', xhr);
+                                        // Even if there's an error, redirect the user
+                                        window.location.href = '/orders';
+                                    }
+                                });
                             }
-                        });
-                    },
-                    prefill: {
-                        name: '',
-                        email: '',
-                        contact: ''
-                    },
-                    theme: {
-                        color: '#F37254'
-                    }
-                };
-                const razorpay = new Razorpay(options);
-                razorpay.open();
-            } else {
-                Swal.fire({
-                    title: 'Success!',
-                    text: responseData.message || 'Your order has been placed successfully!',
-                    icon: 'success',
-                    confirmButtonText: 'Okay'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                        },
+
+                        prefill: {
+                            name: '',   
+                            email: '',
+                            contact: ''
+                        },
+                        theme: {
+                            color: '#F37254'
+                        }
+                    };
+
+                    // Initialize and open Razorpay payment modal
+                    const razorpay = new Razorpay(options);
+                    razorpay.open();
+                } else {
+                    // Handle other payment methods
+                    Swal.fire({
+                        title: 'Success!',
+                        text: responseData.message || 'Your order has been placed successfully!',
+                        icon: 'success',
+                        confirmButtonText: 'Okay'
+                    }).then(() => {
                         window.location.href = '/orders';
-                    }
+                    });
+                }
+            },
+            error: function(xhr) {
+                console.error('Error placing order:', xhr);
+                Swal.fire({
+                    title: 'Order Error',
+                    text: xhr.responseJSON.message || 'An error occurred while placing the order.',
+                    icon: 'error',
+                    confirmButtonText: 'Okay'
                 });
             }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error placing order:', error);
-            toastr.error(xhr.responseJSON.message || error, "Error");
-        }
+        });
     });
-});
 </script>
 
 
@@ -407,6 +461,31 @@
             }
         });
     });
+
+    //Select addresses
+    $(document).ready(function() {
+    $('#existingAddresses').on('change', function() {
+        const selectedAddressId = $(this).val();
+
+        // Check if a valid address is selected
+        if (selectedAddressId) {
+            axios.get('/cart/checkout', {
+                params: { id: selectedAddressId }
+            })
+            .then(function(response) {
+                const deliveryCharge = response.data.deliveryCharge ? response.data.deliveryCharge : 0
+                const finalAmount = response.data.finalAmount;
+                $('#deliveryCharge').text(deliveryCharge);
+                $('#finalAmount').text(finalAmount)
+                console.log('Address details:', response.data);
+            })
+            .catch(function(error) {
+                console.error('Error fetching address details:', error);
+            });
+        }
+    });
+});
+
 
 </script>
 

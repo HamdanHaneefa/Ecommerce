@@ -200,6 +200,8 @@
                               <span style="color: green;"><%= item.status %></span>
                             <% }else if (item.status === 'Returned') { %>
                                 <span style="color: green;"><%= item.status %></span>
+                            <% }else if (item.status === 'Failed') { %>
+                                <span style="color: red;"><%= item.status %></span>
                             <% }else { %>
                               <span><%= item.status %></span>
                             <% } %>
@@ -230,7 +232,7 @@
                         <strong>Original Price:</strong> <span class="quantity"><%= order.totalAmount %></span>
                     </div>
                     <div class="summary-item">
-                        <strong>Discounted Amount:</strong> <span class="quantity" style="color: green;">-<%= order.discount %></span>
+                        <strong>Discounted Amount:</strong> <span class="quantity" style="color: green;"><%= order.discount %></span>
                     </div>
                     <div class="summary-item">
                         <strong>Items:</strong> <span class="quantity"><%= order.orderedItems.length %></span>
@@ -239,20 +241,62 @@
                         <strong>Payment:</strong> <span class="payment-method"><%= order.paymentMethod %> </span>
                     </div>
                     <div class="summary-item">
-                        <strong>Shipping:</strong> <span class="shipping-charges free-shipping">Free</span>
-                    </div>
+                        <strong>Shipping:</strong> 
+                        <% if (order.deliveryCharge === 0) { %>
+                            <span class="shipping-charges free-shipping">Free</span>
+                        <% } else { %>
+                            <span class="shipping-charges"><%= order.deliveryCharge %></span>
+                        <% } %>
+                    </div>                    
                 </div>
             </div>
-
-            <div class="mt-4">
-                <a href="/orders" class="back-btn">Back to Orders</a>
-                <a href="#" class="download-btn">Download Invoice</a>
-            </div>
+            <% if (order.status === 'Delivered') { %>
+                <div class="mt-4">
+                    <a href="/orders" class="back-btn">Back to Orders</a>
+                    <a href="#" class="download-btn" data-order-id="<%= order._id %>">Download Invoice</a>
+                </div>
+            <% } %>            
         </div>
     </div>
 </div>
 
-
+<input type="hidden" id="orderId" value="">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.download-btn').on('click', function (e) {
+            e.preventDefault();
+            
+            const orderId = $(this).data('order-id');
+            console.log(orderId)
+            if (!orderId) {
+                alert("Order ID not found!");
+                return;
+            }
+    
+            $.ajax({
+                url: `/download-invoice/${orderId}`,
+                type: 'GET',
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (data) {
+                    // Create a link element and trigger download
+                    const downloadUrl = URL.createObjectURL(data);
+                    const link = document.createElement('a');
+                    link.href = downloadUrl;
+                    link.download = `invoice-${orderId}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(downloadUrl); // Clean up the URL object
+                },
+                error: function () {
+                    alert("Failed to download the invoice.");
+                }
+            });
+        });
+    });
+    </script>
 
 <%- include("../../views/partials/user/footer") %>

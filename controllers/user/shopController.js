@@ -5,9 +5,13 @@ const Address = require("../../models/addressSchema");
 const Order = require("../../models/orderSchema");
 const Brand = require("../../models/brandSchema");
 const Coupon = require("../../models/couponSchema");
+const path = require('path');
+const fs = require('fs');
 const env = require("dotenv").config();
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const PDFDocument = require('pdfkit');
+
 
 const loadShop = async (req, res) => {
   try {
@@ -103,7 +107,7 @@ const productInfo = async (req, res) => {
         }
       }
     }
- 
+
     if (req.xhr) {
       let active;
       const effectiveOffer = product.effectiveOffer
@@ -216,16 +220,11 @@ const addCart = async (req, res) => {
       );
       cart.discount = 0;
       cart.finalAmount = cart.cartTotal;
-
-       await cart.save();
+      console.log('CART FINAL :',cart)
+      await cart.save();
 
       req.session.successMsg = "Product added to cart successfully";
-      res
-        .status(200)
-        .json({
-          success: "Product added to cart successfully!",
-          redirectUrl: "/cart",
-        });
+      res.status(200).json({success: "Product added to cart successfully!",redirectUrl: "/cart"});
     } else {
       res.status(400).json({ error: "User must be logged in first." });
     }
@@ -355,7 +354,7 @@ const updateQuantity = async (req, res) => {
       );
 
       userCart.cartTotal = total;
-
+      userCart.finalAmount = userCart.cartTotal;
       await userCart.save();
 
       res.status(200).json({
@@ -383,8 +382,8 @@ const checkout = async (req, res) => {
       const userCart = await Cart.findOne({ userId: req.session.user });
       const user = await User.findById(userId);
       const addressData = await Address.findOne({ userId });
-      const addresses = addressData ? addressData.addresses : [];
-
+      const addresses = addressData ? addressData.addresses : []; 
+    
       if (!userCart || userCart.items.length <= 0) {
         return res.json({
           success: false,
@@ -392,7 +391,65 @@ const checkout = async (req, res) => {
             "Your cart is empty. Please add items to your cart before checking out.",
         });
       }
+      
+      //DELIVERY CHARGE
+      const selectedAddressId = req.query.id;
+      console.log("Selected Address ID:", selectedAddressId);
+      
+      if (selectedAddressId) {
+          const addresses = await Address.findOne({ userId: userId });
+          console.log("Addresses found:", addresses);
+      
+          const address = addresses?.addresses?.id(selectedAddressId);
+          console.log("Selected Address:", address);
+      
+          if (!address) {
+              console.log("No address found with this ID.");
+              return;
+          }
+      
+          const adminLat = 10.998304046031746; // FROM  Kottakkal, Malappuram
+          const adminLon = 76.01255696507937;  // FROM  Kottakkal, Malappuram
+          const userLat = parseFloat(address.latitude);
+          const userLon = parseFloat(address.longitude);
+      
+          function calculateDistance(adminLat, adminLon, userLat, userLon) {
+              const R = 6371; // Radius of the Earth in kilometers
+              const dLat = (userLat - adminLat) * (Math.PI / 180);
+              const dLon = (userLon - adminLon) * (Math.PI / 180);
+              const a =
+                  Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(adminLat * (Math.PI / 180)) * Math.cos(userLat * (Math.PI / 180)) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              const distance = R * c; // Distance in kilometers
+              return distance;
+          }
+      
+          const distance = calculateDistance(adminLat, adminLon, userLat, userLon);
+          console.log('Distance:', distance);
+      
+          let deliveryCharge;
+          if (distance <= 5) {
+              deliveryCharge = 0;
+          } else if (distance > 5 && distance <= 10) {
+              deliveryCharge = 50;
+          } else if (distance > 10 && distance <= 20) {
+              deliveryCharge = 100;
+          } else {
+              deliveryCharge = 120;
+          }
 
+          console.log(`Delivery charge: ${deliveryCharge}`);
+
+          userCart.deliveryCharge = deliveryCharge;
+          userCart.finalAmount += deliveryCharge;
+          const finalAmount = userCart.finalAmount;
+          userCart.save();
+          return res.json({ deliveryCharge, finalAmount});
+      }
+
+      
       const coupons = await Coupon.find({ isList: true, userId: { $ne: userId } });
 
       const cartItems = await Promise.all(
@@ -454,6 +511,7 @@ const addCartAddress = async (req, res) => {
         error: "Zip code must be between 5 and 10 digits.",
       });
     }
+    
 
     const newAddress = {
       name,
@@ -488,6 +546,7 @@ const addCartAddress = async (req, res) => {
   }
 };
 
+// Razorpay instance 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID, 
   key_secret: process.env.RAZORPAY_SECRET_KEY, 
@@ -496,9 +555,11 @@ const razorpay = new Razorpay({
 const placeOrder = async (req, res) => {
   try {
     const userId = req.session.user;
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     const { addressId, paymentMethod } = req.body;
-    console.log(req.body)
+    const address = await Address.findOne({ userId: userId });
+    const selectedAddress = address.addresses.find(addr => addr._id.toString() === addressId);
+
     if (!userId || !addressId || !paymentMethod) {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
@@ -521,21 +582,16 @@ const placeOrder = async (req, res) => {
       const variant = product.variants.id(item.variantId);
 
       if (!variant || !variant.isActive) {
-        return res.status(404).json({
-          success: false,
-          message: `Variant not found or inactive for product ${product.productName}.`,
-        });
+        return res.status(404).json({ success: false, message: `Variant not found or inactive for product ${product.productName}.` });
       }
 
       if (item.quantity > variant.stock) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${product.productName}.`,
-        });
+        return res.status(400).json({ success: false, message: `Insufficient stock for ${product.productName}.` });
       }
 
-      variant.stock -= item.quantity;
-      await product.save();
+      if (cartItems.cartTotal > 5000 && paymentMethod === 'Cash On Delivery') {
+        return res.status(400).json({ success: false, message: "Order above Rs 5000 is not allowed for COD." });
+      }
 
       orderedItems.push({
         product: product._id,
@@ -550,13 +606,17 @@ const placeOrder = async (req, res) => {
     let order = new Order({
       userId,
       status: "Pending",
-      address: addressId,
+      address: {
+        ...selectedAddress,
+        addressId: selectedAddress._id
+      },
       paymentMethod,
       orderedItems,
       discount: cartItems.discount,
       totalAmount: cartItems.cartTotal,
       finalAmount: cartItems.finalAmount,
-      orderStatus: "Pending",
+      deliveryCharge: cartItems.deliveryCharge,
+      orderStatus: "Pending"
     });
 
     if (cartItems.couponRedeemed.status === true) {
@@ -566,25 +626,19 @@ const placeOrder = async (req, res) => {
         status: true,
         coupon: couponName
       };
-      console.log('ORDER' ,order)
       const coupon = await Coupon.findOne({ name: couponName });
 
       if (coupon) {
         if (!coupon.userId.includes(user._id)) {
           coupon.userId.push(user._id);
-          console.log('COUPON',coupon)
           await coupon.save();
         }
       }
     }
 
-    await user.save();
-    await order.save();
-    await Cart.deleteOne({ userId });
-
     if (paymentMethod === 'Razorpay') {
       const options = {
-        amount: cartItems.finalAmount * 100,
+        amount: Math.round(cartItems.finalAmount * 100),
         currency: 'INR',
         receipt: `receipt_${order._id}`,
         notes: {
@@ -592,17 +646,19 @@ const placeOrder = async (req, res) => {
           orderId: order._id,
         },
       };
-    
+
       try {
         const razorpayOrder = await razorpay.orders.create(options);
-        order.razorpayOrderId = razorpayOrder.id;
+        order.paymentMethod = 'Razorpay';
+        order.paymentStatus = false;
+        order.orderId = razorpayOrder.id;
         await order.save();
-    
+
         return res.status(201).json({
           success: true,
           message: "Order placed successfully.",
           order,
-          paymentUrl: razorpayOrder.short_url || razorpayOrder.url
+          razorpayOrderId: razorpayOrder.id
         });
       } catch (error) {
         console.error("Error creating Razorpay order:", error);
@@ -610,6 +666,29 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    if (paymentMethod === 'wallet') {
+      if (user.wallet < cartItems.finalAmount) {
+        return res.status(400).json({ success: false, message: "Insufficient wallet balance. Please recharge to continue." });
+      }
+
+      user.wallet -= cartItems.finalAmount;
+      user.paymentMethod = 'wallet';
+    }
+
+    // Update stock if payment method is NOT Razorpay
+    for (const item of cartItems.items) {
+      const product = item.productId;
+      const variant = product.variants.id(item.variantId);
+
+      if (variant) {
+        variant.stock -= item.quantity;
+        await product.save();
+      }
+    }
+
+    await user.save();
+    await order.save();
+    await Cart.deleteOne({ userId });
     return res.status(201).json({ success: true, message: "Order placed successfully.", order });
 
   } catch (error) {
@@ -621,23 +700,56 @@ const placeOrder = async (req, res) => {
 
 
 
-const verifyPayment = async(req, res) => {
+const verifyPayment = async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  console.log( razorpay_order_id, razorpay_payment_id, razorpay_signature )
-  // const secret = process.env.RAZORPAY_SECRET_KEY; // Replace with your Razorpay Key Secret
-  // const generated_signature = crypto
-  //     .createHmac('sha256', secret)
-  //     .update(razorpay_order_id + "|" + razorpay_payment_id)
-  //     .digest('hex');
-  // console.log('generated_signature',generated_signature, razorpay_signature)
-  // if (generated_signature === razorpay_signature) {
-  //     // If signatures match, mark the order as paid
-  //     // Update order status in database
-  //     // (You may need to identify the order based on `razorpay_order_id`)
-      res.status(200).json({ success: true, message: "Payment verified successfully!" });
-  // } else {
-  //     res.status(400).json({ success: false, message: "Payment verification failed!" });
-  // }
+  console.log(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+
+  const order = await Order.findOne({ orderId: razorpay_order_id });
+  const userId = req.session.user;
+  
+  if (!order) {
+    return res.status(404).json({ success: false, message: "Order not found" });
+  }
+
+  // Delete Cart
+  await Cart.deleteOne({ userId });
+
+  // Your Razorpay secret key
+  const secret = process.env.RAZORPAY_SECRET_KEY;
+
+  // Generate signature
+  const generated_signature = crypto
+    .createHmac('sha256', secret)
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest('hex');
+
+  if (generated_signature === razorpay_signature) {
+    // Signatures match, payment is verified
+    order.paymentStatus = true;
+    order.status = 'Pending';
+    await order.save();
+
+    // Update stock for ordered items
+    for (const item of order.orderedItems) {
+      const product = await Product.findById(item.product);
+      const variant = product.variants.id(item.variantId); 
+
+      if (variant) {
+        // Deduct stock
+        variant.stock -= item.quantity;
+        await product.save(); 
+      }
+    }
+
+    // Return success response
+    res.status(200).json({ success: true, message: "Payment verified successfully!" });
+  } else {
+    // Signatures don't match, verification failed
+    order.status = 'Failed';
+    order.paymentStatus = false;
+    await order.save();
+    res.status(400).json({ success: false, message: "Payment verification failed!" });
+  }
 };
 
 
@@ -744,7 +856,238 @@ const deleteWishlist = async (req, res) => {
   }
 };
 
+const generateInvoicePDF = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+      // Fetch order details
+      const order = await Order.findById(orderId)
+      .populate('userId') 
+      .populate({
+          path: 'orderedItems.product', 
+      })
+      .exec();
+      order.orderedItems.forEach(item => {
+        const variant = item.product.variants.id(item.variantId); 
+        item.variant = variant;
+    });
+      console.log("POPULATED ORDER :",order)
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+      const validStatuses = ['Pending', 'Processing', 'Shipped', 'Return Request', 'Returned', 'Return Cancelled', 'Cancelled', 'Failed'];
 
+      // Check if the order status is in the validStatuses array
+      if (validStatuses.includes(order.status)) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+      // Define font paths
+      const fontPath = path.resolve(__dirname, '..', '..', 'public', 'fonts');
+      const logoPath = path.resolve(__dirname, '..', '..', 'public', 'admin', 'img', 'logo.png');
+
+      // Create a new PDF document with custom margin
+      const doc = new PDFDocument({ margin: 50 });
+
+      // Set headers for the PDF file
+      res.setHeader('Content-Disposition', `attachment; filename=invoice-${orderId}.pdf`);
+      res.setHeader('Content-Type', 'application/pdf');
+
+      // Pipe the document to the response
+      doc.pipe(res);
+
+      // Register fonts
+      doc.registerFont('NotoSans', path.join(fontPath, 'NotoSans-Regular.ttf'));
+      doc.registerFont('NotoSans-Bold', path.join(fontPath, 'NotoSans-Bold.ttf'));
+      doc.registerFont('NotoSans-Italic', path.join(fontPath, 'NotoSans-Italic.ttf'));
+
+      // Add company logo and header information
+      doc.image(logoPath, 50, 45, { width: 80 })
+      .font('NotoSans-Bold')
+      .text('VocalGear Pvt. Ltd.', 200, 50, { align: 'right', fontSize: 10 }) 
+      .font('NotoSans')
+      .text('Kinfra, Calicut, India', 200, 65, { align: 'right', fontSize: 8 }) 
+      .text('Email: vocalgear@gmail.com', 200, 80, { align: 'right', fontSize: 8 })
+      .text('Phone: +91 7306827008', 200, 95, { align: 'right', fontSize: 8 })
+      .moveDown();
+   
+      doc.moveTo(50, 120)
+          .lineTo(563, 120)
+          .stroke();
+
+      // Add Invoice Title
+      doc.fontSize(25).font('NotoSans-Bold').text('INVOICE', 250, 123).moveDown()
+
+      doc.moveTo(50, 160)
+          .lineTo(563, 160)
+          .stroke();
+
+      // Add Invoice, Order, and Customer Details
+      doc.fontSize(11).font('NotoSans-Italic')
+          .text(`Order ID: ${order._id}`, 50, 170)
+          .text(`Invoice Date: ${new Date().toDateString()}`, 50, 185)
+          .text(`Customer Name: ${order.userId.name}`, 50, 200)
+          .text(`Contact Number: ${order.address.phone}`, 50, 215)
+          .text(`Shipping Address: ${order.address.street}, ${order.address.city}, ${order.address.state}, ${order.address.country}, ${order.address.zip}`, 50, 230)
+          .moveDown();
+
+      doc.moveTo(50, 255)
+          .lineTo(563, 255)
+          .stroke();
+
+          // Add Product Table Headers
+      doc.fontSize(12).font('NotoSans-Bold')
+      .text('Product', 50, 260)
+      .text('Qty', 280, 260)
+      .text('Unit (₹)', 350, 260)
+      .text('Price (₹)', 420, 260)
+      .text('Total (₹)', 490, 260, { align: 'right' })
+      .moveDown();
+
+      // Add header underline
+      doc.moveTo(50, 280)
+      .lineTo(563, 280)
+      .stroke();
+
+      let yPosition = 290; // Starting y position for items
+
+      order.orderedItems.forEach(item => {
+      // Save initial y position for aligned columns
+      const initialYPosition = yPosition;
+
+      // Display Product Name
+      doc.font('NotoSans').fontSize(11);
+      const productName = item.product.productName || '';
+      doc.text(productName, 50, yPosition, { 
+        width: 200,
+        lineGap: 2
+      });
+
+      // Calculate the height of product name for proper spacing
+      const productNameHeight = doc.heightOfString(productName, { 
+        width: 200,
+        lineGap: 2
+      });
+
+      // Display Color on the next line (with null check)
+      doc.fontSize(9)
+        .font('NotoSans')
+        .text(item.variant?.color || '', 50, yPosition + productNameHeight + 2, { 
+          width: 200,
+          lineGap: 2
+        });
+
+      // Safely get price values with null checks and defaults
+      const quantity = item.quantity || 0;
+      const price = parseFloat(item.variant?.price || 0);
+      const mrp = parseFloat(item.variant?.MRP || item.variant?.mrp || price || 0);
+      const total = quantity * price;
+
+      // Display Quantity, Price, MRP, and Total aligned with first line of product
+      doc.fontSize(11)
+        .text(quantity.toString(), 280, initialYPosition)
+        .text(`₹${price.toFixed(2)}`, 350, initialYPosition)
+        .text(`₹${mrp.toFixed(2)}`, 420, initialYPosition)
+        .text(`₹${total.toFixed(2)}`, 490, initialYPosition, { 
+          align: 'right' 
+        });
+
+      // Calculate space needed for this item including product name and color
+      const totalItemHeight = productNameHeight + 20; 
+      yPosition += totalItemHeight;
+      });
+
+      // Add spacing after the last item
+      yPosition += 10;
+
+      // Draw line after ordered items
+      doc.moveTo(50, yPosition)
+      .lineTo(563, yPosition)
+      .stroke();
+
+          // Calculate Subtotal Amount with safety check
+      const totalAmount = parseFloat(order.totalAmount || 0);
+      const deliveryChargeAmount = parseFloat(order.deliveryCharge || 0);
+      const subTotalAmount = totalAmount;
+
+      // Add Order Summary
+      yPosition += 20;
+      doc.font('NotoSans-Bold')
+        .fontSize(12)
+        .text(`Subtotal: ₹${subTotalAmount.toFixed(2)}`, 50, yPosition, { 
+          align: 'right' 
+        });
+
+      // Increment yPosition after subtotal
+      yPosition += 20;
+
+      // Handle coupon display with safety checks
+      if (order.couponRedeemed?.status) {
+          const finalAmount = parseFloat(order.finalAmount || 0);
+          const discountAmount = Math.max(0, totalAmount - finalAmount);
+          doc.fontSize(11)
+            .text(
+              `Coupon Reduction (${order.couponRedeemed.coupon || 'DISCOUNT'}): -₹${discountAmount.toFixed(2)}`,
+              50,
+              yPosition,
+              { align: 'right' }
+            );
+      } else {
+          doc.font('NotoSans-Italic')
+            .fontSize(10)
+            .text('No coupons applied!', 50, yPosition, { 
+              align: 'right' 
+            });
+      }
+
+      // Increment yPosition after coupon
+      yPosition += 20;
+
+      // Handle delivery charge display with safety check
+      if (order.deliveryCharge && order.deliveryCharge !== 0) {
+          doc.fontSize(11)
+            .text(`Delivery Charge: ₹${deliveryChargeAmount.toFixed(2)}`, 50, yPosition, { 
+              align: 'right' 
+            });
+      }
+
+      // Increment yPosition after delivery charge
+      yPosition += 25;
+
+      // Calculate and display grand total
+      const finalAmount = parseFloat(order.finalAmount || 0);
+      const lastAmount = finalAmount; 
+
+      // Display grand total
+      doc.fontSize(17)
+        .font('NotoSans-Bold')
+        .text(`Grand Total: ₹${lastAmount.toFixed(2)}`, 50, yPosition, { 
+          align: 'right' 
+        });
+
+      // Draw final line (adjusted based on new yPosition)
+      yPosition += 30;
+      doc.moveTo(50, yPosition)
+        .lineTo(563, yPosition)
+        .stroke();
+
+      // Add thank you note and invoice generation text (with proper spacing)
+      doc.fontSize(12)
+        .font('NotoSans')
+        .text('Thank you for your business!', 50, yPosition + 15);
+
+      doc.fontSize(7)
+        .font('NotoSans-Italic')
+        .text('*This is a computer generated Invoice', 50, yPosition + 40, { 
+          align: 'center' 
+        });
+
+      // Finalize the PDF and end the stream
+      doc.end();
+
+  } catch (err) {
+      console.error("Error generating invoice PDF:", err);
+      res.status(500).send('Internal Server Error');
+  }
+};
 
 
 module.exports = {
@@ -760,5 +1103,6 @@ module.exports = {
   loadWishlist,
   toggleWishlist,
   deleteWishlist,
-  verifyPayment
+  verifyPayment,
+  generateInvoicePDF
 };

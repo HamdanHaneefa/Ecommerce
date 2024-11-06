@@ -22,10 +22,10 @@ const orderDetails = async (req,res) =>{
         const order = await Order.findById(orderId).populate('orderedItems.product')
         const user = await User.findById(order.userId);
         const address = await Address.findOne({userId:order.userId})
-        const addressDetail = address.addresses.id(order.address)
+        const addressDetail = address.addresses.id(order.address.addressId)
 
         if(!orderId || !order || !user || !address || !addressDetail){
-            console.log("Required all things , somthing missing!")
+            console.log("Required all things , something missing!")
             res.redirect('/admin/orders')
         }
 

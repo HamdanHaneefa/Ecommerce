@@ -157,6 +157,12 @@
 .status-cancelled {
     color: red; /* Red for Cancelled */
 }
+
+.btn-custom {
+    background-color: #007bff !important; /* Replace with your desired color */
+    color: white; /* Text color */
+}
+
 </style>
 
 <div class="container-fluid">
@@ -211,6 +217,8 @@
                                         <% statusClass = 'status-returned'; %>
                                     <% } else if (orders[i].status === 'Cancelled') { %>
                                         <% statusClass = 'status-cancelled'; %>
+                                    <% }else if (orders[i].status === 'Failed') { %>
+                                        <% statusClass = 'status-cancelled'; %>
                                     <% } else { %>
                                         <% statusClass = ''; %> 
                                     <% } %>
@@ -252,7 +260,10 @@
                                         <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
                                         <button class="btn btn-danger cancel-btn btn-sm ml-2" data-order-id="<%= orders[i]._id %>">Return</button>
                                     <% }
-                                     else { %>
+                                    else if (!orders[i].paymentStatus && orders[i].status === 'Failed') { %>
+                                        <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
+                                        <button class="btn btn-custom cancel-btn btn-sm ml-2" data-order-id="<%= orders[i]._id %>">Retry</button>
+                                        <% }else { %>
                                         <button class="btn btn-primary btn-sm view-btn" data-order-id="<%= orders[i]._id %>">View</button>
                                         <button class="btn btn-danger btn-sm cancel-btn ml-2" data-order-id="<%= orders[i]._id %>">Cancel</button>
                                     <% } %>
@@ -268,6 +279,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
     $(document).ready(function() {
@@ -281,6 +293,12 @@
         $(document).on('click', '.cancel-btn', function(event) {
             event.stopPropagation();
             const orderId = $(this).data('order-id');
+
+            // Check if orderId is available
+            if (!orderId) {
+                Swal.fire('Error!', 'Order ID not found.', 'error');
+                return;
+            }
 
             Swal.fire({
                 title: 'Confirmation Required',
@@ -297,26 +315,102 @@
                         type: 'POST',
                         data: { orderId: orderId },
                         success: function(response) {
-                            if(response.message){
-                                Swal.fire(
-                                'Return Request Submitted',
-                                response.message
-                            );
-                            window.location.reload();
+                            if (response.success) {
+                                if (response.razorpayOrderId) {
+                                    // Proceed with Razorpay payment
+                                    var options = {
+                                        key: 'rzp_test_HSlU3uymqrTahm', 
+                                        amount: response.amount,
+                                        currency: 'INR',
+                                        name: 'VocalGear',
+                                        description: 'Payment for Order ' + orderId,
+                                        order_id: response.razorpayOrderId,
+
+                                        // Success handler
+                                        handler: function(paymentResponse) {
+                                            // On successful payment, send payment details for verification
+                                            $.ajax({
+                                                url: '/cart/checkout/verify-payment',
+                                                type: 'POST',
+                                                contentType: 'application/json',
+                                                data: JSON.stringify({
+                                                    razorpay_order_id: paymentResponse.razorpay_order_id,
+                                                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                                                    razorpay_signature: paymentResponse.razorpay_signature
+                                                }),
+                                                success: function(verifyResponse) {
+                                                    if (verifyResponse.success) {
+                                                        Swal.fire({
+                                                            title: 'Success!',
+                                                            text: 'Payment verified! Your order has been placed.',
+                                                            icon: 'success',
+                                                            confirmButtonText: 'Okay'
+                                                        }).then(() => {
+                                                            window.location.reload();
+                                                        });
+                                                    } else {
+                                                        Swal.fire({
+                                                            title: 'Verification Failed',
+                                                            text: 'Payment verification failed. Please contact support.',
+                                                            icon: 'error',
+                                                            confirmButtonText: 'Okay'
+                                                        });
+                                                    }
+                                                },
+                                                error: function() {
+                                                    Swal.fire({
+                                                        title: 'Verification Error',
+                                                        text: 'An error occurred while verifying payment. Please contact support.',
+                                                        icon: 'error',
+                                                        confirmButtonText: 'Okay'
+                                                    });
+                                                }
+                                            });
+                                        },
+
+                                        // Failure or cancellation handler
+                                        modal: {
+                                            ondismiss: function() {
+                                                // If payment is canceled, redirect to orders
+                                                window.location.href = '/orders';
+                                            }
+                                        },
+
+                                        prefill: {
+                                            name: '',
+                                            email: '',
+                                            contact: ''
+                                        },
+                                        theme: {
+                                            color: '#F37254'
+                                        }
+                                    };
+
+                                    // Initialize and open Razorpay payment modal
+                                    const razorpay = new Razorpay(options);
+                                    razorpay.open();
+                                } else {
+                                    Swal.fire(
+                                        'Return Request Submitted',
+                                        response.message,
+                                        'success'
+                                    ).then(() => {
+                                        window.location.reload();
+                                    });
+                                }
+                            } else {
+                                Swal.fire('Error!', response.message || 'Unknown error occurred.', 'error');
                             }
-                            Swal.fire(
-                                'Return Request Submitted',
-                                'Your order has been successfully requested for return.',
-                                'success'
-                            );
-                            window.location.reload();
                         },
                         error: function(xhr, status, error) {
+                            const errorMessage = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'There was an error canceling your order. Please try again.';
                             Swal.fire(
                                 'Error!',
-                                'There was an error canceling your order. Please try again.',
+                                errorMessage,
                                 'error'
-                            );
+                            ).then(() => {
+                                window.location.reload();
+                            });
                         }
                     });
                 }

@@ -1,72 +1,138 @@
+<style>
+  @media (max-width: 767px) {
+      .footer-select {
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          color: white;
+          padding: 8px 0;
+          width: 100%;
+          font-size: 16px;
+          cursor: pointer;
+          outline: none;
+      }
+      
+      .footer-select option {
+          background-color: #1a1a1a;
+          color: white;
+          padding: 10px;
+      }
+      
+      /* Custom dropdown arrow */
+      .footer-select {
+          background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 8px center;
+          padding-right: 28px;
+      }
+      
+      .py-1 {
+          padding-top: 0.15rem !important;  /* Reduced padding */
+          padding-bottom: 0.15rem !important;  /* Reduced padding */
+      }
+      
+      .mb-3 {
+          margin-bottom: 0.5rem !important;  /* Reduced margin */
+      }
+      
+      .mt-4 {
+          margin-top: 0.75rem !important;  /* Reduced margin */
+      }
 
+      .ftco-footer-widget {
+          margin-bottom: 1rem;  /* Standard gap between footer widgets */
+      }
+  }
+  .ftco-footer-social a {
+  transition: transform 0.3s ease, color 0.3s ease; /* Add transition for smooth effect */
+  color: #000; /* Default icon color */
+}
+
+.ftco-footer-social a:hover {
+  transform: scale(1.2); /* Scale up the icon on hover */
+  color: #007bff; /* Change color on hover */
+}
+
+</style>
 <footer class="ftco-footer ftco-section">
-    <div class="container">
-        <div class="row">
-            <div class="mouse">
-                      <a href="#" class="mouse-icon">
-                          <div class="mouse-wheel"><span class="ion-ios-arrow-up"></span></div>
-                      </a>
-                  </div>
-        </div>
-      <div class="row mb-5">
-        <div class="col-md">
-          <div class="ftco-footer-widget mb-4">
-            <a href="/"><h2 class="ftco-heading-2">VocalGear</h2></a>
-            <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia.</p>
-            <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-5">
-              <li class="ftco-animate"><a href="#"><span class="icon-twitter"></span></a></li>
-              <li class="ftco-animate"><a href="#"><span class="icon-facebook"></span></a></li>
-              <li class="ftco-animate"><a href="#"><span class="icon-instagram"></span></a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-md">
-          <div class="ftco-footer-widget mb-4 ml-md-5">
-            <h2 class="ftco-heading-2">Menu</h2>
-            <ul class="list-unstyled">
-              <li><a href="#" class="py-2 d-block">Shop</a></li>
-              <li><a href="#" class="py-2 d-block">About</a></li>
-              <li><a href="#" class="py-2 d-block">Journal</a></li>
-              <li><a href="#" class="py-2 d-block">Contact Us</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-md-4">
-           <div class="ftco-footer-widget mb-4">
-            <h2 class="ftco-heading-2">Help</h2>
-            <div class="d-flex">
-                <ul class="list-unstyled mr-l-5 pr-l-3 mr-4">
-                  <li><a href="#" class="py-2 d-block">Shipping Information</a></li>
-                  <li><a href="#" class="py-2 d-block">Returns &amp; Exchange</a></li>
-                  <li><a href="#" class="py-2 d-block">Terms &amp; Conditions</a></li>
-                  <li><a href="#" class="py-2 d-block">Privacy Policy</a></li>
-                </ul>
-                <ul class="list-unstyled">
-                  <li><a href="#" class="py-2 d-block">FAQs</a></li>
-                  <li><a href="#" class="py-2 d-block">Contact</a></li>
-                </ul>
-              </div>
-          </div>
-        </div>
-        <div class="col-md">
-          <div class="ftco-footer-widget mb-4">
-              <h2 class="ftco-heading-2">Have a Questions?</h2>
-              <div class="block-23 mb-3">
-                <ul>
-                  <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
-                  <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929 210</span></a></li>
-                  <li><a href="#"><span class="icon icon-envelope"></span><span class="text">info@yourdomain.com</span></a></li>
-                </ul>
-              </div>
-          </div>
-        </div>
-      </div>
+  <div class="container">
       <div class="row">
-      </div>
-    </div>
-  </footer>
-  
+          <div class="col-md">
+              <div class="ftco-footer-widget mb-4">
+                  <a href="/"><h2 class="ftco-heading-2">VocalGear</h2></a>
+                  <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia.</p>
+                  <ul class="ftco-footer-social list-unstyled float-md-left float-lft mt-4">
+                    <li><a href="#"><span class="icon-twitter"></span></a></li>
+                    <li><a href="#"><span class="icon-facebook"></span></a></li>
+                    <li><a href="#"><span class="icon-instagram"></span></a></li>
+                  </ul>                
+              </div>
+          </div>
 
+          <div class="col-md">
+              <div class="ftco-footer-widget mb-4 ml-md-5">
+                  <h2 class="ftco-heading-2 d-none d-md-block">Menu</h2>
+                  <select class="footer-select d-md-none mb-3" id="menuSelect" onchange="window.location.href=this.value">
+                      <option value="">Menu</option>
+                      <option value="#">Shop</option>
+                      <option value="#">About</option>
+                      <option value="#">Journal</option>
+                      <option value="#">Contact Us</option>
+                  </select>
+                  <ul class="list-unstyled d-none d-md-block">
+                      <li><a href="#" class="py-1 d-block">Shop</a></li>
+                      <li><a href="#" class="py-1 d-block">About</a></li>
+                      <li><a href="#" class="py-1 d-block">Journal</a></li>
+                      <li><a href="#" class="py-1 d-block">Contact Us</a></li>
+                  </ul>
+              </div>
+          </div>
+
+          <div class="col-md-4">
+              <div class="ftco-footer-widget mb-4">
+                  <h2 class="ftco-heading-2 d-none d-md-block">Help</h2>
+                  <select class="footer-select d-md-none mb-3" id="helpSelect" onchange="window.location.href=this.value">
+                      <option value="">Help</option>
+                      <option value="#">Shipping Information</option>
+                      <option value="#">Returns & Exchange</option>
+                      <option value="#">Terms & Conditions</option>
+                      <option value="#">Privacy Policy</option>
+                      <option value="#">FAQs</option>
+                      <option value="#">Contact</option>
+                  </select>
+                  <div class="d-flex d-none d-md-block">
+                      <ul class="list-unstyled mr-4">
+                          <li><a href="#" class="py-1 d-block">Shipping Information</a></li>
+                          <li><a href="#" class="py-1 d-block">Returns &amp; Exchange</a></li>
+                          <li><a href="#" class="py-1 d-block">Terms &amp; Conditions</a></li>
+                          <li><a href="#" class="py-1 d-block">Privacy Policy</a></li>
+                      </ul>
+                      <ul class="list-unstyled">
+                          <li><a href="#" class="py-1 d-block">FAQs</a></li>
+                          <li><a href="#" class="py-1 d-block">Contact</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+
+          <div class="col-md">
+              <div class="ftco-footer-widget mb-4">
+                  <h2 class="ftco-heading-2">Have a Questions?</h2>
+                  <div class="block-23 mb-3">
+                      <ul>
+                          <li><span class="icon icon-map-marker"></span><span class="text">203 Fake St. Mountain View, San Francisco, California, USA</span></li>
+                          <li><a href="#"><span class="icon icon-phone"></span><span class="text">+2 392 3929 210</span></a></li>
+                          <li><a href="#"><span class="icon icon-envelope"></span><span class="text">info@yourdomain.com</span></a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</footer>
 
 <!-- loader -->
 <div id="ftco-loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#F96D00"/></svg></div>

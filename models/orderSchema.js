@@ -18,13 +18,42 @@ const orderSchema = new Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned' , 'Return Cancelled' ,'Cancelled']
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Return Request', 'Returned' , 'Return Cancelled' ,'Cancelled' ,'Failed']
+    },
+    paymentStatus:{
+        type: Boolean,
+        default:true,
+        required:true
     },
     address: {
-        type: Schema.Types.ObjectId,
-        ref: 'Address',
-        required: true
-    },
+        name: {
+            type: String,
+        },
+        street: { 
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        state: {
+            type: String,
+        },
+        zipcode: {
+            type: String,
+        },
+        country: {
+            type: String,
+        },
+        phone: {
+            type: String, 
+        },
+        placeName: {
+            type: String,
+        },
+        addressId: {
+            type: Schema.Types.ObjectId,
+        }
+      },
     paymentMethod: {
         type: String,
         required: true  
@@ -63,6 +92,10 @@ const orderSchema = new Schema({
         required: true
     },
     finalAmount :{
+        type: Number,
+        required: true
+    },
+    deliveryCharge:{
         type: Number,
         required: true
     },

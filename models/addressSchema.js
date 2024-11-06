@@ -35,8 +35,20 @@ const addressSchema = new Schema({
         phone: {
             type: String, 
             required: true
+        },
+        placeName: {
+            type: String,
+            required: true
+        },
+        longitude: { 
+            type: String,
+            required: true
+        },
+        latitude: { 
+            type: String,
+            required: true
         }
-    }]
+    }],
 }, { timestamps: true });
 
 const Address = mongoose.model("Address", addressSchema);

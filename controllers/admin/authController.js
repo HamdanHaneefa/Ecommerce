@@ -33,13 +33,16 @@ const login = async (req,res) =>{
 
 const logout = async (req,res) =>{
     try {
-        req.session.destroy(err =>{
-            if(err){
-                console.log("Error destroying session",err)
-                return res.redirect("/pageError")
-            }
-            res.redirect('/admin/login')
-        })
+        if (req.session && req.session.admin) {
+            req.session.admin = null;
+
+            console.log("Admin session cleared");
+        
+            return res.redirect('/admin/login');
+        } else { 
+            console.log("Session is null or undefined");
+            return res.redirect('/admin/login');
+        }
     } catch (error) {
         console.log("Error in Logout",error)
         res.redirect("/pageError")

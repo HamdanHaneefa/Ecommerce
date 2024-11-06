@@ -49,6 +49,11 @@ const cartSchema = new Schema({
         type:Number,
         required:true
     },
+    deliveryCharge:{
+        type:Number,
+        default:0,
+        required:true
+    },
     discount:{
         type:Number,
         required:true
