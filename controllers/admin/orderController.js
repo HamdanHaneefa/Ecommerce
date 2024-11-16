@@ -34,9 +34,12 @@ const orderDetails = async (req,res) =>{
             errorMessage = "You can't update the status once it is&nbsp;<strong>Cancelled</strong>.";
         } else if (order.status === 'Delivered') {
             errorMessage = "You can't update the status once it is&nbsp;<strong>Delivered</strong>.";
-        }  else if (order.status === 'Returned') {
+        } else if (order.status === 'Returned') {
             errorMessage = "You can't update the status once it is&nbsp;<strong>Returned</strong>.";
+        } else if (order.status === 'Failed') {
+            errorMessage = "You can't update the status once it is&nbsp;<strong>Failed</strong>.";
         }
+
 
         const returnRequest = order.status === 'Return Request' ? true : false;
 
@@ -386,11 +389,10 @@ const deleteOffer = async(req, res) => {
 
             product.offerPercentage = undefined;
             product.effectiveOffer = 0;
-
+            console.log('PRODUCT DETAILS :',product.variants)
             for (let variant of product.variants) {
                 variant.salePrice = variant.price;
             }
-
             await product.save();
             return res.status(200).json({ message: 'Product offer removed successfully' });
         }

@@ -14,8 +14,14 @@ const loadHomepage = async (req, res) => {
     const userData = req.session.user ? await User.findById(req.session.user) : null;
     const products = await Product.find({ isActive: true });
     const errorMessage = req.session.errorMessage ? req.session.errorMessage : null ;
+
+    if(userData && userData.isBlocked === true){
+      req.session.errorMessage = 'User is blocked by admin'
+      return res.redirect('/login')
+    }
+
     req.session.errorMessage = null;
-    res.render('home', { user: userData, products,errorMessage});
+    return res.render('home', { user: userData, products,errorMessage});
 
   } catch (error) {
     console.error("Error loading homepage:", error);

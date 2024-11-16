@@ -126,17 +126,6 @@ const productUnblocked = async (req, res) => {
   }
 };
 
-// Delete Product
-const deleteProduct = async (req, res) => {
-  try {
-    const productId = req.params.id;
-    await Product.findByIdAndDelete(productId);
-    return res.redirect('/admin/product');
-  } catch (error) {
-    console.log("Error happened in delete Product", error);
-    res.redirect('/admin/product');
-  }
-};
 
 // Update Product
 const productUpdate = async (req, res) => {
@@ -343,12 +332,15 @@ const editVariant = async (req, res) => {
       return res.redirect('/admin/product-varient/' + productId);
     }
 
+    let salePrice = product.offerPercentage ? (price * product.offerPercentage ) / 100 : price
+  
     await Product.updateOne(
       { _id: productId, 'variants._id': variantId },
       {
         $set: {
           'variants.$.color': color,
           'variants.$.price': price,
+          'variants.$.salePrice': salePrice,
           'variants.$.stock': stock,
           'variants.$.isActive': isActive === 'true',
         },
@@ -359,7 +351,7 @@ const editVariant = async (req, res) => {
       { 'items.variantId': variantId },
       {
         $set: {
-          'items.$[elem].price': price,
+          'items.$[elem].price': price, 
           'items.$[elem].stock': stock,
         },
       },
@@ -367,7 +359,6 @@ const editVariant = async (req, res) => {
         arrayFilters: [{ 'elem.variantId': variantId }],
       }
     );
-    console.log("Saved succefully")
 
     res.redirect(`/admin/product-varient/${productId}`);
   } catch (error) {
@@ -383,7 +374,6 @@ module.exports = {
   addProducts,
   productBlocked,
   productUnblocked,
-  deleteProduct,
   productUpdate,
   loadVariant,
   addVarient,

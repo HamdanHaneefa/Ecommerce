@@ -145,6 +145,8 @@
                         <span class="badge badge-warning">Approve Return</span>
                     <% } else if (order.status === 'Returned') { %>
                         <span class="badge badge-success">Returned</span>
+                    <% }  else if (order.status === 'Failed') { %>
+                        <span class="badge badge-danger">Failed</span>
                     <% } %>  
                                     
                 </td>                

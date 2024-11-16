@@ -419,7 +419,7 @@ const orders = async (req,res) =>{
         
         const userId = req.session.user; 
         const user = await User.findById(userId)
-        const orders = await Order.find({})
+        const orders = await Order.find({}).sort({ createdAt: -1 })
         .populate({ path: 'orderedItems.product', model: 'Product' })
 
         res.render('orders', { orders, err_msg: null,user, url:req.originalUrl}); 
@@ -567,6 +567,14 @@ const returnOrder = async (req, res) => {
                         order.save();
                         return res.status(400).json({ success: false,   message: "Sorry, this product is currently unavailable or has been deactivated." });
                     }
+
+                    if(variant.price !== item.price){
+                        order.status = 'Cancelled';
+                        order.save();
+                        return res.status(400).json({ success: false, message: "We're sorry, but this product is no longer available and the price has been changed. Your order has been canceled."
+                        });                        
+                    }
+                   
                   }
                 const options = {
                     amount: Math.round(order.finalAmount * 100), 
@@ -585,7 +593,7 @@ const returnOrder = async (req, res) => {
                     order.orderId = razorpayOrder.id;
                     // Save order
                     await order.save();
-                    return res.status(201).json({
+                    return res.status(200).json({
                         success: true,
                         message: "Order placed successfully.",
                         order,
@@ -630,7 +638,7 @@ const loadCoupon = async (req,res) =>{
 const applyCoupon = async (req, res) => {
     try {
         const { couponCode } = req.body;
-
+        console.log('HEHEHE')
         if (!couponCode || typeof couponCode !== 'string' || couponCode.length < 3) {
             return res.status(400).json({ message: 'Invalid coupon code format.' });
         }
@@ -650,18 +658,31 @@ const applyCoupon = async (req, res) => {
         }
 
         const userId = req.session.user;
-        const cart = await Cart.findOne({ userId });
+        const cart = await Cart.findOne({ userId }).lean();
         const user = await User.findById(userId);
+
+        //Varaint details
+        for(let item of cart.items){
+            const product = await Product.findById(item.productId)
+            const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+            if (variant) {
+            item.variantId = variant;
+            item.totalPrice = variant.salePrice * item.quantity
+            }
+        }
+
+        const cartTotal = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
+        console.log('CartTotal :',cartTotal)
 
         if (!cart) {
             return res.status(400).json({ message: 'Cart not found.' });
         }
 
-        if (cart.cartTotal >= coupon.maximumPrice) {
+        if (cartTotal >= coupon.maximumPrice) {
             return res.status(400).json({ message: `Minimum purchase of ₹${coupon.maximumPrice} required to use this coupon.` });
         }
 
-        if (cart.cartTotal <= coupon.minimumPrice) {
+        if (cartTotal <= coupon.minimumPrice) {
             return res.status(400).json({ message: `Minimum purchase of ₹${coupon.minimumPrice} required to use this coupon.` });
         }
 
@@ -670,21 +691,35 @@ const applyCoupon = async (req, res) => {
                 return res.status(400).json({ message: 'Coupon has already been redeemed for this cart.' });
             }
         }
+        
 
-        const discountAmount = (cart.cartTotal * coupon.discount) / 100;
-        cart.finalAmount = cart.cartTotal - discountAmount;
+        //Varaint details
+        for (let item of cart.items) {
+            const product = await Product.findById(item.productId)
+            const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+            if (variant) {
+                item.variantId = variant;
+                item.totalPrice = variant.salePrice * item.quantity
+            }
+        }
+
+        // Calculate totals
+        const subtotal = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
+        const discountAmount = Math.floor((subtotal * coupon.discount) / 100);
+
+        console.log('Discount amount :',discountAmount)
+
         if (coupon.userId.includes(userId)) {
-            return res.status(400).json({ message: 'Coupon has already been redeemed by this user.' });
+            return res.status(400).json({ message: 'Coupon has already been redeemed by this user.'});
         } 
 
-
-        cart.couponRedeemed = {
+        // Save coupon data to session
+        req.session.couponRedeemed = {
             status: true,
-            coupon: couponCode
+            coupon: couponCode,
+            discountAmount
         };
 
-        cart.discount = discountAmount;
-        await cart.save();
         return res.status(200).json({ message: 'Coupon applied successfully!' });
 
     } catch (error) {
@@ -696,14 +731,13 @@ const applyCoupon = async (req, res) => {
 
 const deleteCoupon = async (req,res) =>{
     try {
-        const userId = req.session.user;
-        const cart = await Cart.findOne({userId:userId})
-        console.log(cart)   
-        cart.couponRedeemed.status = 'false';
-        cart.discount = 0;
-        cart.finalAmount = cart.cartTotal
-        cart.save();
-        return res.status(200).json({success:true})
+        if(req.session.user){
+            req.session.couponRedeemed = null
+            return res.status(200).json({success:true})
+        }else{
+            req.session.errorMessage = "Oops! It seems you need to log in again.";
+            res.redirect('/');
+        }  
     } catch (error) {
         console.log("Error occured in deleteCoupon",error)
         res.redirect('/cart/checkout')

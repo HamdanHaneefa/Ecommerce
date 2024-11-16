@@ -27,15 +27,15 @@
                                 <% cartItems.forEach(function(item) { %>
                                     <tr class="text-center">
                                         <td class="product-remove">
-                                            <a href="javascript:void(0);" onclick="removeFromCart('<%= item.variantId %>')">
+                                            <a href="javascript:void(0);" onclick="removeFromCart('<%= item.variantId._id %>')">
                                                 <span class="ion-ios-close"></span>
                                             </a>
                                         </td>
                                         <td class="image-prod">
-                                            <% if (item.variantImage) { %>
+                                            <% if (item.variantId.images) { %>
                                              <a href="/product/<%= item.productId._id %>">
-                                                <img src='/uploads/variant-images/<%= item.variantImage %>' alt="<%= item.productId.name %>" style="height: 100px; width: 100px; object-fit: cover;">
-                                             </a>
+                                                <img src="/uploads/variant-images/<%= item.variantId.images[0] %>" alt="<%= item.productId.productName %>" style="height: 100px; width: 100px; object-fit: cover;">
+                                            </a>
                                             <% } else { %>
                                                 <div style="height: 100px; width: 100px; display: flex; align-items: center; justify-content: center; background-color: #f0f0f0;">
                                                     <span style="color: #888;">Image not available</span>
@@ -46,13 +46,13 @@
                                             <h3><%= item.productId.name %></h3>
                                             <p><%= item.productId.description %></p>
                                         </td>
-                                        <td class="price">₹<%= item.price.toFixed(2) %></td>
+                                        <td class="price">₹<%= item.variantId.salePrice %></td>
                                         <td class="quantity text-center">
                                             <button type="button" class="quantity-left-minus btn btn-outline-secondary" data-variant-id="<%= item.variantId._id %>">-</button>
                                             <input type="text" id="quantity-<%= item.variantId._id %>" name="quantity" class="quantity form-control input-number text-center d-inline-block" style="width: 60px;" value="<%= item.quantity %>" readonly>
                                             <button type="button" class="quantity-right-plus btn btn-outline-secondary" data-variant-id="<%= item.variantId._id %>">+</button>
                                         </td>
-                                        <td class="total" id="totalPrice-<%= item.variantId._id %>">₹<%= item.totalPrice %></td>
+                                        <td class="total" id="totalPrice-<%= item.variantId._id %>">₹<%= item.totalAmount %></td>
                                     </tr><!-- END TR -->
                                 <% }); %>  
                             <% } else { %>
@@ -87,7 +87,7 @@
                     <hr>
                     <p class="d-flex total-price">
                         <span>Total</span>
-                        <span id="final-total">₹<%= total.toFixed(2) %></span>
+                        <span id="final-total">₹<%= finalAmount.toFixed(2) %></span>
                     </p>
                 </div>
 
@@ -133,8 +133,8 @@
                     if(response.success){ 
                         document.getElementById(`quantity-${variantId}`).value = `${response.quantity}`
                         document.getElementById(`totalPrice-${variantId}`).textContent = `₹${response.totalAmount}`;
-                        document.getElementById('subtotal').textContent = `₹${response.total.toFixed(2)}`;
-                        document.getElementById('final-total').textContent = `₹${response.total.toFixed(2)}`;
+                        document.getElementById('subtotal').textContent = `₹${response.finalAmount.toFixed(2)}`;
+                        document.getElementById('final-total').textContent = `₹${response.finalAmount.toFixed(2)}`;
                     }
                     if(response.error){
                         toastr.options.timeOut = 1500;

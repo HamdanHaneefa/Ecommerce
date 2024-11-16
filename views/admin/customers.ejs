@@ -33,11 +33,11 @@
                                   <% if (!data[i].isAdmin) { %>
                                     <div class="btn-group">
                                       <% if (data[i].isBlocked) { %>
-                                        <button class="btn btn-outline-danger btn-sm scale-on-hover">
+                                        <button class="btn btn-outline-danger btn-sm scale-on-hover" style="background-color: red;">
                                           <a href="/admin/blockCustomer?id=<%= data[i]._id %>">Deactive</a>
                                         </button>
                                       <% } else { %>
-                                        <button class="btn btn-outline-success btn-sm scale-on-hover">
+                                        <button class="btn btn-outline-success btn-sm scale-on-hover" style="background-color: #00c950;">
                                           <a href="/admin/unblockCustomer?id=<%= data[i]._id %>">Active</a>
                                         </button>
                                       <% } %>

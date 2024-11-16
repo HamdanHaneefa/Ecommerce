@@ -160,7 +160,7 @@
                         </div>
                     <% } else { %>
                         <div id="appliedCouponSection" style="display: block; margin-top: 10px;">
-                            <p>You have saved a coupon of <strong id="appliedCouponName"><%= couponName %></strong> with a discount of <strong id="appliedCouponOffer" style="color: #28a745;">₹<%= userCart.discount %></strong></p>
+                            <p>You have saved a coupon of <strong id="appliedCouponName"><%= couponName %></strong> with a discount of <strong id="appliedCouponOffer" style="color: #28a745;">₹<%= userCart.couponRedeemed.discountAmount %></strong></p>
                             <button class="btn btn-outline-danger" id="removeCoupon">REMOVE</button>
                         </div>
                     <% } %>
@@ -188,19 +188,19 @@
                         <div class="mt-4">
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Cart Subtotal</span>
-                                <span>₹<%= userCart.cartTotal %></span>
+                                <span>₹<%= subtotal %></span>
                             </h5>
 
                             <!-- Coupon Offer (Default: None) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Coupon Offer</span>
-                                <span style="color: green;">₹<%= userCart.discount %></span>
+                                <span style="color: green;">₹<%= discount %></span>
                             </h5>
 
                             <!-- Order Total (Same as Cart Subtotal for now) -->
                             <h5 class="d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
                                 <span>Order Total</span>
-                                <span>₹<%= userCart.cartTotal %></span>
+                                <span>₹<%= total %></span>
                             </h5>
 
                             <!-- Delivery Charge (Default: 0) -->
@@ -213,7 +213,7 @@
                         <!-- Final Total -->
                         <div class="d-flex justify-content-between mt-2">
                             <strong>Total:</strong>
-                            <span id="finalAmount">₹<%= userCart.finalAmount %></span>
+                            <span id="finalAmount">₹<%= total %></span>
                         </div>
                         </div>
                     </div>
@@ -473,11 +473,11 @@
                 params: { id: selectedAddressId }
             })
             .then(function(response) {
-                const deliveryCharge = response.data.deliveryCharge ? response.data.deliveryCharge : 0
-                const finalAmount = response.data.finalAmount;
-                $('#deliveryCharge').text(deliveryCharge);
-                $('#finalAmount').text(finalAmount)
-                console.log('Address details:', response.data);
+                const deliveryCharge = response.data.delivery ? response.data.delivery : 0
+                const finalAmount = response.data.total;
+                $('#deliveryCharge').text(`₹${deliveryCharge}`);
+                $('#finalAmount').text(`₹${finalAmount}`);
+                console.log(finalAmount)
             })
             .catch(function(error) {
                 console.error('Error fetching address details:', error);

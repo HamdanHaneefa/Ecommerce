@@ -132,14 +132,14 @@
                                             <p class="price">
                                                 <% if (product.effectiveOffer > 0) { %>
                                                     <span class="price-original" style="text-decoration: line-through; color: #888;">
-                                                        ₹<%= product.price %>
+                                                        ₹<%= product.variants[0].price %>
                                                     </span>
                                                     <span class="price-effective" style="font-weight: bold; color: #d9534f;">
                                                         ₹<%= product.variants[0].salePrice %>
                                                     </span>
                                                 <% } else { %>
                                                     <span class="price-original" style="color: #888;">
-                                                        ₹<%= product.price %>
+                                                        ₹<%= product.variants[0].price %>
                                                     </span>
                                                 <% } %>
                                             </p>
@@ -151,10 +151,6 @@
                         <% }); %> <!-- End product loop -->
                     <% } %>
                 </div>
-                
-                
-                
-                
             </div>
 
             <!-- CATEGORIES  -->

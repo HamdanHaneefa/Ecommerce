@@ -170,7 +170,7 @@
                         </td>
                         <td><%= orderDetail.productName %></td>
                         <td>
-                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : order.status === 'Returned' ? 'badge-returned' : order.status === 'Cancelled' ? 'badge-cancelled' : 'badge-pending' %>">
+                            <span class="badge <%= order.status === 'Delivered' ? 'badge-delivered' : order.status === 'Shipped' ? 'badge-shipped' : order.status === 'Returned' ? 'badge-returned' : (order.status === 'Cancelled' || order.status === 'Failed') ? 'badge-cancelled' : 'badge-pending' %>">
                                 <%= order.status %>
                             </span>                            
                         </td> <!-- Status Field -->

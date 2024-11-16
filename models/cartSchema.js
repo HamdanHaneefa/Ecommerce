@@ -16,62 +16,42 @@ const cartSchema = new Schema({
             required:true
         },
         variantId: { 
-            type: Schema.Types.ObjectId,
-            ref: "Variant", 
+            type:Schema.Types.ObjectId, 
+            ref: "Variant",
             required: true
         },
         quantity:{
             type:Number,
             default:1      
         },
-        price:{
-            type:Number,
-            required:true
-        },
-        stock:{
-            type:Number,
-            required:true
-        },
-        totalPrice:{
-            type:Number,
-            required:true
-        },
-        variantImage: {
-            type: String,
-            required: false
-        },
-        status:{
-            type:String,
-            default:'placed'
-        }
     }],
-    cartTotal:{
-        type:Number,
-        required:true
-    },
-    deliveryCharge:{
-        type:Number,
-        default:0,
-        required:true
-    },
-    discount:{
-        type:Number,
-        required:true
-    },
-    finalAmount:{
-        type:Number,
-        required:true
-    },
-    couponRedeemed: {
-        status: {
-            type: Boolean,
-            default: false
-        },
-        coupon: {
-            type: String,
-            default: null
-        }
-    }
+    // cartTotal:{
+    //     type:Number,
+    //     required:false
+    // },
+    // deliveryCharge:{
+    //     type:Number,
+    //     default:0,
+    //     required:false
+    // },
+    // discount:{
+    //     type:Number,
+    //     required:false
+    // },
+    // finalAmount:{
+    //     type:Number,
+    //     required:false
+    // },
+    // couponRedeemed: {
+    //     status: {
+    //         type: Boolean,
+    //         default: false
+    //     },
+    //     coupon: {
+    //         type: String,
+    //         default: null
+    //     }
+    // }
 })
 
 

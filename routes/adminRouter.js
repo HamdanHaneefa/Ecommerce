@@ -19,7 +19,7 @@ router.get('/pageError',adminController.pageNotFound)
 router.get('/login',adminController.loadLogin)
 router.post('/login',authController.login)
 router.get('/',adminAuth,adminController.loadDashboard)
-router.get('/reports', adminController.generateReport);
+router.get('/reports', adminController.generateReport); 
 router.get('/logout',authController.logout)
 
 
@@ -44,7 +44,6 @@ router.post('/addProducts',adminAuth,upload.any(),productController.addProducts)
 router.post('/add-products', adminAuth, upload.array('files'), productController.addProducts);
 router.get('/blockProduct',adminAuth,productController.productUnblocked)
 router.get('/unblockProduct',adminAuth,productController.productBlocked)
-router.get('/deleteProduct/:id',adminAuth, productController.deleteProduct);
 router.post('/updateProduct/:id',adminAuth,productController.productUpdate)
 
 

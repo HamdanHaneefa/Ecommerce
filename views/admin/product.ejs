@@ -19,13 +19,13 @@
                                 <th scope="col">Type</th>
                                 <th scope="col">Variants</th>
                                 <th scope="col">Activation</th>
-                                <th scope="col">Delete</th>
+                                <th scope="col">Edit</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (products && products.length > 0) { %>
                                 <% for (let i = 0; i < products.length; i++) { %>
-                                    <tr class="product-row" data-bs-toggle="modal" data-bs-target="#editProductModal<%= products[i]._id %>">
+                                    <tr class="product-row">
                                         <td>
                                             <% if (products[i].ProductImage) { %>
                                                 <img src="/uploads/product-images/<%= products[i].ProductImage %>" style="max-width: 80px; max-height: 80px; object-fit: cover;" />
@@ -40,7 +40,6 @@
                                             <a href="/admin/product-varient/<%= products[i]._id %>" class="btn btn-secondary btn-sm">Variants</a>
                                         </td>
                                         
-                                        
                                         <td>
                                             <% if (products[i].isActive) { %>
                                                 <a href="/admin/blockProduct?id=<%= products[i]._id %>"><button class="btn btn-success btn-sm">Active</button></a>
@@ -49,9 +48,8 @@
                                             <% } %>
                                         </td>
                                         <td>
-                                            <a href="javascript:void(0);" class="btn btn-sm delete-btn custom-delete-btn d-flex align-items-center justify-content-center" onclick="confirmDelete('<%= products[i]._id %>')">
-                                                <i class="bi bi-trash" style="margin-right: 5px;"></i> Delete
-                                            </a>                                            
+                                            <!-- Add data-bs-toggle and data-bs-target here on the Edit link -->
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#editProductModal<%= products[i]._id %>">Edit</a>                      
                                         </td>
                                     </tr>
 
@@ -169,24 +167,6 @@
     });
 </script>
 
-<script>
-    function confirmDelete(productId) {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to undo this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = `/admin/deleteProduct/${productId}`;
-            }
-        });
-    }
-    </script>
-    
+
 
 <%- include("../../views/partials/admin/footer") %>

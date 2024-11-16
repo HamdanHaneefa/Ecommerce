@@ -112,7 +112,7 @@ const signup = async (req, res) => {
     res.redirect("/signup");
   }
 };
-
+ 
 // Function to verify OTP
 const verifyOtp = async (req, res) => {
   try {
@@ -173,6 +173,7 @@ const login = async (req, res) => {
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const passPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
+    if( req.session.errorMessage)
     if ( !email || !password ) {
       req.flash("error_msg", "All fields are required");
       return res.redirect("/login");

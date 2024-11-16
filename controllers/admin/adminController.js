@@ -21,6 +21,8 @@ const loadLogin = (req,res) =>{
     res.render("admin-login",{message:null})
 }
 
+
+
 const loadDashboard = async (req, res) => {
     try {
         // Basic stats aggregation
@@ -130,6 +132,7 @@ const loadDashboard = async (req, res) => {
             totalDiscount: totalDiscount[0] ? totalDiscount[0].totalDiscount : 0,
         };
 
+        
         // Get the past 7 days labels
         const days = [];
         const today = new Date();
@@ -192,7 +195,6 @@ const loadDashboard = async (req, res) => {
         const shippedCountsArray = await getOrderCountsByStatus('Shipped');
         const deliveredCountsArray = await getOrderCountsByStatus('Delivered');
 
-        // Render the dashboard view with all data, including best-selling product and brand
         res.render('dashboard', {
             stats,
             url: req.originalUrl,
@@ -213,44 +215,206 @@ const loadDashboard = async (req, res) => {
 };
 
 
+// Helper function to get order counts by status
+const getOrderCountsByStatus = async (startDate, endDate, status, reportType) => {
+    let format, dates;
+    const now = moment(endDate);
+
+    // Configure grouping format and generate dates based on report type
+    switch (reportType) {
+        case 'daily':
+            format = "%Y-%m-%d-%H";
+            dates = Array.from({ length: 24 }, (_, i) => {
+                return moment(startDate).startOf('day').add(i, 'hours')
+                    .format('YYYY-MM-DD-HH');
+            });
+            break;
+
+        case 'weekly':
+            format = "%Y-%m-%d";
+            dates = Array.from({ length: 7 }, (_, i) => {
+                return moment(startDate).add(i, 'days')
+                    .format('YYYY-MM-DD');
+            });
+            break;
+
+        case 'monthly':
+            // For monthly, we'll use a different approach
+            const pipeline = [
+                {
+                    $match: {
+                        status,
+                        createdAt: {
+                            $gte: new Date(startDate),
+                            $lte: new Date(endDate)
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        // Calculate which week of the month (1-4) this order belongs to
+                        weekOfMonth: {
+                            $ceil: {
+                                $divide: [
+                                    { $dayOfMonth: "$createdAt" },
+                                    7
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$weekOfMonth",
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { _id: 1 }
+                }
+            ];
+
+            const weekCounts = await Order.aggregate(pipeline);
+            
+            // Initialize array with 0s for all 4 weeks
+            return Array.from({ length: 4 }, (_, i) => {
+                const weekData = weekCounts.find(w => w._id === (i + 1));
+                return weekData ? weekData.count : 0;
+            });
+
+        case 'yearly':
+            format = "%Y-%m";
+            dates = Array.from({ length: 12 }, (_, i) => {
+                return moment(startDate).add(i, 'months')
+                    .format('YYYY-MM');
+            });
+            break;
+
+        case 'custom':
+            format = "%Y-%m-%d";
+            const dayCount = moment(endDate).diff(moment(startDate), 'days') + 1;
+            dates = Array.from({ length: dayCount }, (_, i) => {
+                return moment(startDate).add(i, 'days')
+                    .format('YYYY-MM-DD');
+            });
+            break;
+
+        default:
+            format = "%Y-%m-%d";
+            dates = Array.from({ length: 7 }, (_, i) => {
+                return moment(startDate).add(i, 'days')
+                    .format('YYYY-MM-DD');
+            });
+    }
+
+    // For non-monthly reports, use the original aggregation
+    if (reportType !== 'monthly') {
+        const counts = await Order.aggregate([
+            {
+                $match: {
+                    status,
+                    createdAt: {
+                        $gte: new Date(startDate),
+                        $lte: new Date(endDate)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            format: format,
+                            date: "$createdAt"
+                        }
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        return dates.map(date => {
+            const found = counts.find(item => item._id === date);
+            return found ? found.count : 0;
+        });
+    }
+};
+
+
+
 const generateReport = async (req, res) => {
     const reportType = req.query.reportType;
-
     let startDate, endDate;
     const now = moment();
-    
+    let dateLabels = [];
+
     switch (reportType) {
         case 'daily':
             startDate = now.startOf('day').toDate();
             endDate = now.endOf('day').toDate();
+            // Generate 24 hour labels
+            for (let i = 0; i < 24; i++) {
+                dateLabels.push(`${i}:00`);
+            }
             break;
         case 'weekly':
             startDate = now.startOf('week').toDate();
             endDate = now.endOf('week').toDate();
+            // Generate 7 days of the week
+            for (let i = 0; i < 7; i++) {
+                const date = moment().startOf('week').add(i, 'days');
+                dateLabels.push(date.format('dddd'));
+            }
             break;
         case 'monthly':
             startDate = now.startOf('month').toDate();
             endDate = now.endOf('month').toDate();
+            // Generate 4 weeks
+            for (let i = 0; i < 4; i++) {
+                dateLabels.push(`Week ${i + 1}`);
+            }
             break;
         case 'yearly':
             startDate = now.startOf('year').toDate();
             endDate = now.endOf('year').toDate();
+            // Generate 12 months
+            for (let i = 0; i < 12; i++) {
+                const date = moment().month(i);
+                dateLabels.push(date.format('MMMM'));
+            }
+            break;
+        case 'custom':
+            if (!req.query.startDate || !req.query.endDate) {
+                return res.status(400).json({ error: "Start date and end date are required for custom report" });
+            }
+            startDate = moment(req.query.startDate).startOf('day').toDate();
+            endDate = moment(req.query.endDate).endOf('day').toDate();
+            // Generate dates between start and end date
+            const days = moment(endDate).diff(moment(startDate), 'days') + 1;
+            for (let i = 0; i < days; i++) {
+                const date = moment(startDate).add(i, 'days');
+                dateLabels.push(date.format('MMM DD, YYYY'));
+            }
             break;
         default:
             return res.status(400).json({ error: "Invalid report type" });
     }
 
+    console.log('StartDate :', startDate);
+    console.log('EndDate :', endDate);
+    console.log('Date Labels:', dateLabels);
+
     try {
-        console.log(reportType)
         const orders = await Order.find({
             createdAt: {
                 $gte: startDate,
                 $lte: endDate
             }
-        }).populate('userId', 'name') 
+        }).populate('userId', 'name')
           .select('orderId userId totalAmount discount finalAmount status paymentMethod createdAt');
 
-        // Format the orders to include user name
         const formattedOrders = orders.map(order => ({
             orderId: order.orderId,
             userName: order.userId ? order.userId.name : 'Unknown',
@@ -261,15 +425,28 @@ const generateReport = async (req, res) => {
             paymentMethod: order.paymentMethod,
             createdAt: order.createdAt
         }));
+        // console.log('Orders :', formattedOrders);
+          
+        const pendingCountsArray = await getOrderCountsByStatus(startDate, endDate, 'Pending', reportType);
+        const shippedCountsArray = await getOrderCountsByStatus(startDate, endDate, 'Shipped', reportType);
+        const deliveredCountsArray = await getOrderCountsByStatus(startDate, endDate, 'Delivered', reportType);
 
-        res.json(formattedOrders);
+        console.log('pendingCountsArray :', pendingCountsArray);
+        console.log("shippedCountsArray :", shippedCountsArray);
+        console.log("deliveredCountsArray :", deliveredCountsArray);
+
+        res.json({
+            orders: formattedOrders,
+            dateLabels,
+            pendingCountsArray,
+            shippedCountsArray,
+            deliveredCountsArray
+        });
     } catch (error) {
         console.error("Error generating report:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
 
 
 module.exports ={

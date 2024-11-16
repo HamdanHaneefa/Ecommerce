@@ -16,7 +16,7 @@
 
   .dashboard-header {
     display: flex;
-    justify-content: start;
+    justify-content: start; 
     align-items: center;
     padding: 1rem 0;
     border-bottom: 2px solid #ddd; /* Thicker border for emphasis */
@@ -351,6 +351,34 @@
   color: white;
 }
 
+.custom-date-group {
+  margin-top: 20px; /* Space above the date fields */
+  display: block;  /* Make sure the group is shown */
+  
+  .form-label {
+    display: block;  /* Make sure labels are stacked vertically */
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+
+  .form-input {
+    width: 100%;  /* Ensure inputs take the full width of the container */
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 15px;  /* Add space between the date fields */
+    box-sizing: border-box;
+  }
+
+  .form-group {
+    margin-bottom: 15px;  /* Add space between each label/input pair */
+  }
+}
+
+
 
 </style>
 
@@ -409,9 +437,21 @@
       <option value="weekly">Weekly</option>
       <option value="monthly">Monthly</option>
       <option value="yearly">Yearly</option>
+      <option value="custom">Custom Date</option>
   </select>
+
+  <!-- Custom Date -->
+  <div class="form-group custom-date-group" id="customDateFields" style="display:none;">
+    <label for="startDate" class="form-label">Start Date:</label>
+    <input type="date" id="startDate" name="startDate" class="form-input"><br><br>
+  
+    <label for="endDate" class="form-label">End Date:</label>
+    <input type="date" id="endDate" name="endDate" class="form-input">
+  </div>
+
   <button type="button" id="generateReportButton">Generate Report</button>
 </div>
+
 
 <!-- Sales Report Section -->
 <div id="reportTableContainer" class="sales-report-section" style="display: none;">
@@ -421,7 +461,7 @@
           <tr>
               <th>Order ID</th>
               <th>User</th>
-              <th>Total Amount</th>
+              <th>Total Amount</th> 
               <th>Discount</th>
               <th>Final Amount</th>
               <th>Status</th>
@@ -434,8 +474,8 @@
       </tbody>
   </table>
   <div class="button-group">
-      <button id="downloadPdf" class="btn btn-primary downloadPdfbtn" style="display: none;">Download PDF</button>
-      <button id="downloadExcel" class="btn btn-success downloadExcelbtn" style="display: none;">Download Excel</button>
+      <button id="downloadPdf" class="btn btn-primary downloadPdfbtn" style="display: none; background-color: #0056b3;">Download PDF</button>
+      <button id="downloadExcel" class="btn btn-success downloadExcelbtn" style="display: none; background-color:#2e7d32;">Download Excel</button>
   </div>
 </div>
 
@@ -446,13 +486,12 @@
 </div>
 
   <!-- Best Selling Section -->
-<section class="best-selling-section">
+  <section class="best-selling-section">
     <div class="best-selling-container">
         <div class="stat-box stat-box-4" id="bestSellingProduct" role="button">
-            Best-Selling Product: <strong id="bestSellingProductValue"><%= bestSellingProduct ? bestSellingProduct.productName : 'No Orders Available' %></strong>
-        </div>
+          Best-Selling Product: <strong id="bestSellingProductValue"><%= bestSellingProduct ? bestSellingProduct.productName : 'No Orders Available' %></strong>        </div>
         <div class="stat-box stat-box-5" id="bestSellingBrand" role="button">
-            Best-Selling Brand: <strong id="bestSellingBrandValue"> <%= bestSellingBrand ? bestSellingBrand.brandName : 'No Orders Available' %></strong>
+          Best-Selling Brand: <strong id="bestSellingBrandValue"> <%= bestSellingBrand ? bestSellingBrand.brandName : 'No Orders Available' %></strong>
         </div>
     </div>
 </section>
@@ -522,170 +561,338 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script>
+  // Define reportData in global scope
+  let reportData = {
+      orders: [],
+      dateLabels: [],
+      pendingCountsArray: [],
+      shippedCountsArray: [],
+      deliveredCountsArray: []
+  };
+  
+  // Listen for changes on the report type dropdown
+  document.getElementById('reportType').addEventListener('change', function() {
+      const reportType = this.value;
+      const customDateFields = document.getElementById('customDateFields');
+  
+      // Show custom date fields only if 'custom' is selected
+      if (reportType === 'custom') {
+          customDateFields.style.display = 'block'; // Show date inputs
+      } else {
+          customDateFields.style.display = 'none'; // Hide date inputs
+      }
+  });
+  
   document.getElementById('generateReportButton').addEventListener('click', function() {
-    const reportType = document.getElementById('reportType').value;
-    const reportSection = document.getElementById('reportTableContainer');
-    const downloadPdfButton = document.getElementById('downloadPdf');
-    const downloadExcelButton = document.getElementById('downloadExcel');
-    
-    console.log(reportType);
-    if (reportType) {
-        reportSection.style.display = 'block';
-        
-        // Show download buttons
-        downloadPdfButton.style.display = 'inline-block';
-        downloadExcelButton.style.display = 'inline-block';
-
-
-        fetch(`/admin/reports?reportType=${reportType}`)
-            .then(response => response.json())
-            .then(data => {
-                const reportData = document.getElementById('reportData');
-                reportData.innerHTML = ''; 
-                data.forEach(order => {
-                    const row = `
-                        <tr>
-                            <td>${order.orderId}</td>
-                            <td>${order.userName}</td>
-                            <td>${order.totalAmount.toFixed(2)}</td>
-                            <td>${order.discount.toFixed(2)}</td>
-                            <td>${order.finalAmount.toFixed(2)}</td>
-                            <td>${order.status}</td>
-                            <td>${order.paymentMethod}</td>
-                            <td>${new Date(order.createdAt).toLocaleDateString()}</td>
-                        </tr>
-                    `;
-                    reportData.innerHTML += row;
-
-
-                });
-            })
-            .catch(error => console.error('Error fetching report data:', error));
-    } else {
-        toastr.info('Please select a report type.');
-        reportSection.style.display = 'none';
-        
-        // Hide download buttons
-        downloadPdfButton.style.display = 'none';
-        downloadExcelButton.style.display = 'none';
-    }
-});
-
-// PDF download logic
-document.getElementById('downloadPdf').addEventListener('click', function() {
+      const reportType = document.getElementById('reportType').value;
+      const reportSection = document.getElementById('reportTableContainer');
+      const downloadPdfButton = document.getElementById('downloadPdf');
+      const downloadExcelButton = document.getElementById('downloadExcel');
+  
+      let startDate = '';
+      let endDate = '';
+  
+      // If "Custom" date range is selected, get the start and end date values
+      if (reportType === 'custom') {
+          startDate = document.getElementById('startDate').value;
+          endDate = document.getElementById('endDate').value;
+  
+          if (!startDate || !endDate) {
+              toastr.error('Please select both start and end dates for custom range');
+              return;
+          }
+      }
+  
+      if (reportType) {
+          reportSection.style.display = 'block';
+          
+          // Show download buttons
+          downloadPdfButton.style.display = 'inline-block';
+          downloadExcelButton.style.display = 'inline-block';
+  
+          // Show loading state
+          const loadingIndicator = document.getElementById('loadingIndicator');
+          if (loadingIndicator) loadingIndicator.style.display = 'block';
+  
+          fetch(`/admin/reports?reportType=${reportType}&startDate=${startDate}&endDate=${endDate}`)
+              .then(response => {
+                  if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+              })
+              .then(data => {
+                  // Update table data
+                  const reportDataTable = document.getElementById('reportData');
+                  reportDataTable.innerHTML = ''; 
+  
+                  data.orders.forEach(order => {
+                      const row = `
+                          <tr>
+                              <td>${order.orderId}</td>
+                              <td>${order.userName}</td>
+                              <td>${order.totalAmount.toFixed(2)}</td>
+                              <td>${order.discount.toFixed(2)}</td>
+                              <td>${order.finalAmount.toFixed(2)}</td>
+                              <td>${order.status}</td>
+                              <td>${order.paymentMethod}</td>
+                              <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                          </tr>
+                      `;
+                      reportDataTable.innerHTML += row;
+                  });
+  
+                  // Update the global reportData object
+                  reportData = {
+                      orders: data.orders,
+                      dateLabels: data.dateLabels,
+                      pendingCountsArray: data.pendingCountsArray,
+                      shippedCountsArray: data.shippedCountsArray,
+                      deliveredCountsArray: data.deliveredCountsArray
+                  };
+  
+                  // Update chart
+                  updateChart();
+  
+                  // Hide loading indicator
+                  if (loadingIndicator) loadingIndicator.style.display = 'none';
+              })
+              .catch(error => {
+                  console.error('Error fetching report data:', error);
+                  toastr.error('Failed to fetch report data');
+                  if (loadingIndicator) loadingIndicator.style.display = 'none';
+              });
+      } else {
+          toastr.info('Please select a report type.');
+          reportSection.style.display = 'none';
+          
+          // Hide download buttons
+          downloadPdfButton.style.display = 'none';
+          downloadExcelButton.style.display = 'none';
+      }
+  });
+  
+  // Function to update the chart
+  function updateChart() {
+      const ctx = document.getElementById('myChart').getContext('2d');
+      
+      // Destroy existing chart if it exists
+      if (window.myChart instanceof Chart) {
+          window.myChart.destroy();
+      }
+  
+      let delayed;
+      const data = {
+          labels: reportData.dateLabels,
+          datasets: [
+              {
+                  label: "Pending",
+                  data: reportData.pendingCountsArray,
+                  backgroundColor: 'rgba(255, 255, 0, 0.5)', 
+              },
+              {
+                  label: "Shipped",
+                  data: reportData.shippedCountsArray,
+                  backgroundColor: "rgba(135, 206, 235, 0.7)",
+              },
+              {
+                  label: "Delivered",
+                  data: reportData.deliveredCountsArray,
+                  backgroundColor: "rgba(144, 238, 144, 0.7)", 
+              },
+          ]
+      };
+  
+      const config = {
+          type: 'bar',
+          data: data,
+          options: {
+              responsive: true,
+              plugins: {
+                  legend: {
+                      position: 'top'
+                  },
+                  title: {
+                      display: true,
+                      text: 'Order Status Distribution'
+                  }
+              },
+              animation: {
+                  onComplete: () => {
+                      delayed = true;
+                  },
+                  delay: (context) => {
+                      let delay = 0;
+                      if (context.type === 'data' && context.mode === 'default' && !delayed) {
+                          delay = context.dataIndex * 300 + context.datasetIndex * 100;
+                      }
+                      return delay;
+                  },
+              },
+              scales: {
+                  x: {
+                      stacked: true,
+                  },
+                  y: {
+                      stacked: true,
+                      beginAtZero: true
+                  }
+              }
+          }
+      };
+  
+      window.myChart = new Chart(ctx, config);
+  }
+  
+  document.getElementById('downloadPdf').addEventListener('click', function() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
+  
+    // Add report title
+    doc.setFontSize(16);
+    doc.text("Sales Report", 14, 15);
+  
+    // Add date range info
+    const reportType = document.getElementById('reportType').value;
     doc.setFontSize(12);
-    doc.text("Sales Report", 14, 10);
+    doc.text(`Report Type: ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`, 14, 25);
+  
+    if (reportType === 'custom') {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        doc.text(`Date Range: ${startDate} to ${endDate}`, 14, 35);
+    }
+
+    // Set up the table
     doc.autoTable({
+        startY: reportType === 'custom' ? 45 : 35,
         head: [['Order ID', 'User', 'Total Amount', 'Discount', 'Final Amount', 'Status', 'Payment', 'Created At']],
         body: Array.from(document.querySelectorAll('#reportData tr')).map(row => {
             return Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
-        })
+        }),
+        theme: 'grid', // Better table grid style
+        headStyles: { 
+            fillColor: [41, 128, 185], // Blue color for header
+            textColor: 255, // White text in header
+            fontSize: 12, 
+            halign: 'center' // Center align the header text
+        },
+        bodyStyles: {
+            fontSize: 10, // Slightly smaller font for the table content
+            valign: 'middle', // Center vertical alignment
+            overflow: 'linebreak', // Allow line break for long text
+            rowHeight: 10 // Set a consistent row height
+        },
+        columnStyles: {
+            0: { cellWidth: 25 }, // Order ID
+            1: { cellWidth: 30 }, // User
+            2: { cellWidth: 30 }, // Total Amount
+            3: { cellWidth: 25 }, // Discount
+            4: { cellWidth: 30 }, // Final Amount
+            5: { cellWidth: 20 }, // Status
+            6: { cellWidth: 20 }, // Payment
+            7: { cellWidth: 30 }, // Created At
+        },
+        columnStyles: {
+            0: { halign: 'center' },
+            1: { halign: 'left' },
+            2: { halign: 'right' },
+            3: { halign: 'right' },
+            4: { halign: 'right' },
+            5: { halign: 'center' },
+            6: { halign: 'center' },
+            7: { halign: 'center' },
+        },
+        margin: { top: 45 }, // Margin for the content
+        pageBreak: 'auto', // Allow page breaks if the content exceeds the page
+        showHead: 'everyPage', // Show the table header on every page
+    });
+
+    // Add summary statistics
+    const finalY = doc.lastAutoTable.finalY || 150;
+    doc.text("Summary Statistics", 14, finalY + 10);
+    
+    const stats = {
+        'Total Orders': reportData.orders.length,
+        'Pending Orders': reportData.pendingCountsArray.reduce((a, b) => a + b, 0),
+        'Shipped Orders': reportData.shippedCountsArray.reduce((a, b) => a + b, 0),
+        'Delivered Orders': reportData.deliveredCountsArray.reduce((a, b) => a + b, 0)
+    };
+
+    let yOffset = finalY + 20;
+    Object.entries(stats).forEach(([key, value]) => {
+        doc.setFontSize(12);
+        doc.text(`${key}: ${value}`, 14, yOffset);
+        yOffset += 10;
     });
 
     doc.save('sales-report.pdf');
 });
 
-// Excel download logic
-document.getElementById('downloadExcel').addEventListener('click', function() {
-    const workbook = XLSX.utils.book_new();
-    const worksheetData = [];
-    
-    // Get header
-    const headers = ['Order ID', 'User', 'Total Amount', 'Discount', 'Final Amount', 'Status', 'Payment', 'Created At'];
-    worksheetData.push(headers);
+  
+  // Excel download logic
+  document.getElementById('downloadExcel').addEventListener('click', function() {
+      const workbook = XLSX.utils.book_new();
+      
+      // Create main data worksheet
+      const worksheetData = [];
+      
+      // Add report type and date range info
+      const reportType = document.getElementById('reportType').value;
+      worksheetData.push(['Report Type', reportType.charAt(0).toUpperCase() + reportType.slice(1)]);
+      
+      if (reportType === 'custom') {
+          const startDate = document.getElementById('startDate').value;
+          const endDate = document.getElementById('endDate').value;
+          worksheetData.push(['Date Range', `${startDate} to ${endDate}`]);
+      }
+      
+      worksheetData.push([]); // Empty row for spacing
+      
+      // Add headers
+      const headers = ['Order ID', 'User', 'Total Amount', 'Discount', 'Final Amount', 'Status', 'Payment', 'Created At'];
+      worksheetData.push(headers);
+  
+      // Add data rows
+      document.querySelectorAll('#reportData tr').forEach(row => {
+          const rowData = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
+          worksheetData.push(rowData);
+      });
+  
+      // Add summary statistics
+      worksheetData.push([]); // Empty row for spacing
+      worksheetData.push(['Summary Statistics']);
+      worksheetData.push(['Total Orders', reportData.orders.length]);
+      worksheetData.push(['Pending Orders', reportData.pendingCountsArray.reduce((a, b) => a + b, 0)]);
+      worksheetData.push(['Shipped Orders', reportData.shippedCountsArray.reduce((a, b) => a + b, 0)]);
+      worksheetData.push(['Delivered Orders', reportData.deliveredCountsArray.reduce((a, b) => a + b, 0)]);
+  
+      // Create the worksheet
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
+      
+      // Create status distribution worksheet
+      const distributionData = [
+          ['Date', 'Pending', 'Shipped', 'Delivered']
+      ];
+      
+      reportData.dateLabels.forEach((date, index) => {
+          distributionData.push([
+              date,
+              reportData.pendingCountsArray[index],
+              reportData.shippedCountsArray[index],
+              reportData.deliveredCountsArray[index]
+          ]);
+      });
+      
+      const distributionWorksheet = XLSX.utils.aoa_to_sheet(distributionData);
+      XLSX.utils.book_append_sheet(workbook, distributionWorksheet, 'Status Distribution');
+      
+      XLSX.writeFile(workbook, 'sales-report.xlsx');
+  });
+  </script>
+ 
 
-    // Get rows data
-    document.querySelectorAll('#reportData tr').forEach(row => {
-        const rowData = Array.from(row.querySelectorAll('td')).map(cell => cell.innerText);
-        worksheetData.push(rowData);
-    });
-
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sales Report');
-    
-    XLSX.writeFile(workbook, 'sales-report.xlsx');
-});
-
-</script>
-
-
-<script>
-const days = JSON.parse(document.getElementById('days').textContent);
-const pendings = JSON.parse(document.getElementById('pendings').textContent);
-const shipped = JSON.parse(document.getElementById('shipped').textContent);
-const delivered = JSON.parse(document.getElementById('delivered').textContent);
-
-// Generate the Chart
-let delayed;
-const data = {
-    labels: days,
-    datasets: [
-        {
-            label: "Pending",
-            data: pendings,
-            backgroundColor: 'rgba(255, 255, 0, 0.5)', // Original yellow color for pending
-        },
-        {
-            label: "Shipped",
-            data: shipped,
-            backgroundColor: "rgba(135, 206, 235, 0.7)", // Light blue for shipped
-        },
-        {
-            label: "Delivered",
-            data: delivered,
-            backgroundColor: "rgba(144, 238, 144, 0.7)", // Light green for delivered
-        },
-    ]
-};
-
-const config = {
-    type: 'bar',
-    data: data,
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top'
-            },
-            title: {
-                display: true,
-                text: 'Stacked Bar Chart with Delayed Animation'
-            }
-        },
-        animation: {
-            onComplete: () => {
-                delayed = true;
-            },
-            delay: (context) => {
-                let delay = 0;
-                if (context.type === 'data' && context.mode === 'default' && !delayed) {
-                    delay = context.dataIndex * 300 + context.datasetIndex * 100;
-                }
-                return delay;
-            },
-        },
-        scales: {
-            x: {
-                stacked: true, // Enables stacking on the x-axis
-            },
-            y: {
-                stacked: true, // Enables stacking on the y-axis
-                beginAtZero: true
-            }
-        }
-    }
-};
-
-// Render the chart
-const myChart = new Chart(
-    document.getElementById('myChart'),
-    config
-);
-
-</script>
 
 
 <script>
