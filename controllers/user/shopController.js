@@ -79,15 +79,22 @@ const loadShop = async (req, res) => {
       return res.redirect("/shop");
     }
 
+    let errorMessage = req.session.blockUser || null;
     let user = null;
-    if (req.session.user) {
-      const foundUser = await User.findById(req.session.user);
-      if (foundUser?.isBlocked) {
-        req.session.user = null;
-        return res.redirect('/shop');
-      }
+    
+    if (req.session.blockUser) {
+        req.session.blockUser = null;
     }
     
+    if (req.session.user) {
+        user = await User.findById(req.session.user);
+        if (user?.isBlocked) {
+            req.session.blockUser = 'User account is blocked.';
+            req.session.user = null;
+            return res.redirect('/shop');
+        }
+    }
+
     res.render("shop", {
       products,
       user,
@@ -103,7 +110,8 @@ const loadShop = async (req, res) => {
       sort,
       brandSort,
       cSort,
-      tSort
+      tSort,
+      errorMessage
     });
 
   } catch (error) {
@@ -151,9 +159,7 @@ const productInfo = async (req, res) => {
     if (req.xhr) {
       let active;
       const effectiveOffer = product.effectiveOffer
-      console.log('isInWishlist :',isInWishlist)
       isInWishlist ? active = 'remove' : active = 'add';
-      console.log(active)
       return res.json({ variant,isInWishlist ,active,user , effectiveOffer });
     }
    
@@ -206,15 +212,12 @@ const addCart = async (req, res) => {
           item.productId.toString() === productId.toString() &&
           item.variantId.toString() === variantId.toString()
       );
-
-      console.log("variant :",variant);
        
 
       if (existingItemIndex > -1) {
         const currentQuantity = Number(cart.items[existingItemIndex].quantity);
         const newTotalQuantity = currentQuantity + quantityNum;
         if (newTotalQuantity > variant.stock) {
-          console.log("Quantity exceeds stock available");
           return res.status(400).json({ error: "Quantity exceeds stock available." });
         }
 
@@ -241,7 +244,6 @@ const addCart = async (req, res) => {
         });
       }
 
-      console.log(cart)
       await cart.save();
 
       req.session.successMsg = "Product added to cart successfully";
@@ -257,14 +259,18 @@ const addCart = async (req, res) => {
 
 const loadCart = async (req, res) => {
   try {
-    const userId = '66ecfa1dc080eac4c2e3aece';
-    req.session.user = userId
-    // const userId = req.session.user;
+    const userId = req.session.user;
     const user = await User.findById(userId);
     if (req.session.user) {
       let cart = await Cart.findOne({ userId })
       .populate("items.productId")
       .lean();
+
+        if (user?.isBlocked) {
+          req.session.user = null;
+          req.session.blockUser = 'User account is blocked.';
+          return res.redirect('/shop')
+        }
 
       const successMsg = req.session.successMsg ? req.session.successMsg : null;
       req.session.successMsg = null;
@@ -330,7 +336,6 @@ const deleteProduct = async (req, res) => {
     if (req.session.user) {
       const variantId = req.params.id;
       const userId = req.session.user;
-      console.log(userId);
       const cart = await Cart.findOneAndUpdate(
         { userId: userId },
         { $pull: { items: { variantId: variantId } } }
@@ -432,18 +437,23 @@ const updateQuantity = async (req, res) => {
 };
 
 const checkout = async (req, res) => {
+  req.session.user = '66ecfa1dc080eac4c2e3aece'
   try {
-    const userId = '66ecfa1dc080eac4c2e3aece';
-    req.session.user = userId
     if (req.session.user) {
       const userId = req.session.user;
       const userCart = await Cart.findOne({ userId: req.session.user }).lean();
       const user = await User.findById(userId);
-      const addressData = await Address.findOne({ userId });
+      const addressData = await Address.findOne({ userId : userId });
       const addresses = addressData ? addressData.addresses : []; 
     
       if (!userCart || userCart.items.length <= 0) {
         return res.redirect('/cart')
+      }
+
+      if (user?.isBlocked) {
+        req.session.blockUser = 'User account is blocked.';
+        req.session.user = null;
+        return res.redirect('/shop');
       }
 
       //Varaint details
@@ -481,9 +491,23 @@ const checkout = async (req, res) => {
       // Calculate totals
       const subtotal = userCart.items.reduce((acc, item) => acc + item.totalPrice, 0);
       let discount = 0;
-      if(req.session.couponRedeemed){
-        discount = req.session.couponRedeemed.discountAmount 
-      }
+   
+      //Coupon totals
+      if (req.session.couponRedeemed) {
+        discount = req.session.couponRedeemed.discountAmount;
+        const coupon = await Coupon.findById(req.session.couponRedeemed.couponId);
+
+        if (!coupon || coupon.isList === false) {
+            req.session.couponRedeemed = null;
+            discount = 0;
+        } else {
+            if (subtotal < coupon.minimumPrice || subtotal > coupon.maximumPrice) {
+                req.session.couponRedeemed = null;
+                discount = 0;
+            }
+        }
+    }
+
       userCart.couponRedeemed = req.session.couponRedeemed ? req.session.couponRedeemed : {
         status: false,
         coupon: null,
@@ -520,7 +544,6 @@ const checkout = async (req, res) => {
           }
       
           const distance = calculateDistance(adminLat, adminLon, userLat, userLon);
-          console.log('Distance:', distance);
       
           let deliveryCharge;
           if (distance <= 5) {
@@ -533,8 +556,6 @@ const checkout = async (req, res) => {
               deliveryCharge = 120;
           }
 
-          console.log(`Delivery charge: ${deliveryCharge}`);
-
           delivery = deliveryCharge;
           total += deliveryCharge;
           req.session.cartDetail = {
@@ -543,7 +564,7 @@ const checkout = async (req, res) => {
           };
           return res.json({ delivery, total});
       }
-      console.log("USERCART : ",userCart)
+
       res.render("checkout", {
         user,
         addresses,
@@ -645,6 +666,12 @@ const placeOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
+    if (user.isBlocked) {
+      req.session.blockUser = 'User account is blocked.';
+      req.session.user = null;
+      return res.redirect('/');
+    }
+
     const cartItems = await Cart.findOne({ userId }).populate("items.productId");
 
     if (!cartItems || !cartItems.items.length) {
@@ -665,7 +692,7 @@ const placeOrder = async (req, res) => {
       if (!variant || !variant.isActive) { 
         return res.status(404).json({ success: false, message: `Variant not found or inactive for product ${product.productName}.` });
       }
-      console.log('VARIANT  :',variant)
+
       if (item.quantity > variant.stock) {
         return res.status(400).json({ success: false, message: `Insufficient stock for ${product.productName}.` });
       }
@@ -717,12 +744,13 @@ const placeOrder = async (req, res) => {
         status: true,
         coupon: couponName
       };
+      req.session.couponRedeemed = null;
       const coupon = await Coupon.findOne({ name: couponName });
 
       if (coupon) {
         if (!coupon.userId.includes(user._id)) {
           coupon.userId.push(user._id);
-          // await coupon.save();
+          await coupon.save();
         }
       }
     }
@@ -775,7 +803,7 @@ const placeOrder = async (req, res) => {
         await product.save();
       }
     }
-    console.log('ORDER : ',order)
+
     await user.save();
     await order.save(); 
     await Cart.deleteOne({ userId });
@@ -792,7 +820,6 @@ const placeOrder = async (req, res) => {
 
 const verifyPayment = async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  console.log(razorpay_order_id, razorpay_payment_id, razorpay_signature);
 
   const order = await Order.findOne({ orderId: razorpay_order_id });
   const userId = req.session.user;
@@ -886,15 +913,12 @@ const toggleWishlist = async (req, res) => {
       const wishlistItemIndex = user.wishlist.findIndex(item => 
           item.product.toString() === productId && item.variantId.toString() === variantId
       );
-      console.log('action :',action)
 
 
       if (action === 'add') {
-        console.log('INSIDE THE ADD')
           if (wishlistItemIndex === -1) {
               user.wishlist.push({ product: productId, variantId, addedOn: new Date() });
               await user.save();
-              console.log('Added to wishlist')
               return res.status(200).json({ message: "Added to wishlist", added: true });
           } else {
               return res.status(409).json({ error: "Item already in wishlist." });
@@ -902,11 +926,9 @@ const toggleWishlist = async (req, res) => {
       } 
 
       if (action === 'remove') {
-        console.log('INSIDE THE remove')
           if (wishlistItemIndex > -1) {
               user.wishlist.splice(wishlistItemIndex, 1);
               await user.save();
-              console.log('Removed from wishlist')
               return res.status(200).json({ message: "Removed from wishlist", removed: true });
           } else {
               return res.status(404).json({ error: "Item not found in wishlist." });
@@ -960,7 +982,6 @@ const generateInvoicePDF = async (req, res) => {
         const variant = item.product.variants.id(item.variantId); 
         item.variant = variant;
     });
-      console.log("POPULATED ORDER :",order)
       if (!order) {
           return res.status(404).json({ message: 'Order not found' });
       }

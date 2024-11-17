@@ -72,21 +72,10 @@ const editBrand = async (req, res) => {
 };
 
 
-const deleteBrand = async (req,res) =>{
-    try {
-        const {id } = req.body
-        await Brand.findByIdAndDelete(id);
-        return res.redirect('/admin/category')
-    } catch (error) {
-        console.log("Error happened in delete Brand",error)
-        res.redirect('/admin/category')
-    }
-}
 
 module.exports ={
     categoryInfo,
     addBrand,
     changeStatus,
     editBrand,
-    deleteBrand
 }

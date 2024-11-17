@@ -376,8 +376,6 @@
             var variantId = $(this).data('variantId');
             var productId = $(this).data('productId');
 
-            console.log("Selected Variant ID: " + variantId);
-            console.log("Product ID: " + productId);
 
             $.ajax({
                 url: '/product/' + productId + '?variant=' + variantId,
@@ -391,7 +389,6 @@
                     $("#wishlist-btn").attr('data-variant-id',variantId)
                     $('#wishlist-btn').css('display','block')
                     $('#wishlist-btn').toggleClass('active', response.isInWishlist);
-                    console.log(response.active)
                     document.getElementById('temp').value = response.active
                     if (response.variant.stock > 0) {
                         $('.stock-info').html('<strong>Stock Available:</strong> ' + response.variant.stock + ' items');
@@ -410,10 +407,6 @@
             const selectedVariantId = selectedVariant.data('variantId');
             const productId = '<%= product._id %>';
             const quantity = $('#quantity').val();
-
-            console.log("Selected Variant ID: " + selectedVariantId);
-            console.log("Product ID: " + productId);
-            console.log("Quantity: " + quantity);
 
             $.ajax({
                 url: '/cart/add',
@@ -449,9 +442,7 @@
     let isActive = document.getElementById('temp').value
     const productId = $(this).attr('data-product-id');
     const variantId = $(this).attr('data-variant-id');
-    console.log("Is Active:", isActive);
-    console.log("ProductId:", productId);
-    console.log('VariantId :',variantId)
+
 
     axios.post('/wishlist/toggle', {
        action: isActive,

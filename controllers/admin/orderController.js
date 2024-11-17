@@ -25,7 +25,6 @@ const orderDetails = async (req,res) =>{
         const addressDetail = address.addresses.id(order.address.addressId)
 
         if(!orderId || !order || !user || !address || !addressDetail){
-            console.log("Required all things , something missing!")
             res.redirect('/admin/orders')
         }
 
@@ -69,7 +68,6 @@ const orderDetails = async (req,res) =>{
 const changeStatus = async (req, res) => {
     try {
         const { orderId, status } = req.body;
-        console.log(orderId, status);
         const order = await Order.findById(orderId);
         const user = await User.findById(order.userId)
 
@@ -78,7 +76,6 @@ const changeStatus = async (req, res) => {
         if (!Status) {
             return res.status(400).json({ success: false, message: 'Invalid status provided.' });
         }
-        console.log(Status)
         if( order.status === 'Cancelled'){
             return res.status(400).json({success:false , message:"You can't update the status once it is Returned."})
         }
@@ -89,22 +86,18 @@ const changeStatus = async (req, res) => {
             return res.status(400).json({success:false , message:"You can't update the status once it is Returned."})
         }
         if(Status == 'Returned'){
-            // console.log('USER TRANSACTION :',user.transaction)
-            // console.log('ORDER ID :',order._id)
             let transaction = user.transaction.find(tx => tx.orderId.equals(order._id));
-            console.log(transaction)
             transaction.status = true
             if(transaction.type == 'Razorpay'){
                 user.wallet += transaction.amount
                 transaction.status = true
             }
-            console.log(transaction)
+          
         }
         order.status = Status; 
         await order.save();
         await user.save()
         res.json({ success: true, status: Status });
-        console.log(Status)
     } catch (error) {
         console.error("Error occurred in changeStatus", error);
         res.status(500).json({ success: false, message: 'An error occurred while updating the order status.' });
@@ -126,7 +119,6 @@ const loadCoupons = async (req,res) =>{
 const addCoupon = async (req,res) =>{
     try {
         const { code, discount, minPurchase , maxAmount , expirationDate} =req.body;
-        console.log(code, discount, minPurchase , maxAmount , expirationDate)
         if (!code || !discount || !minPurchase || !maxAmount || !expirationDate) {
             return res.status(404).json({ success:false, error: "Required all fields " });
         }
@@ -184,7 +176,6 @@ const toggleCoupon = async(req,res) =>{
     try {
         const action = req.params.action;
         const couponId = req.params.id;
-        console.log(action, couponId)
 
         const coupon = await Coupon.findById(couponId)
         if (!coupon) {
@@ -312,7 +303,6 @@ const loadBrandOffer = async (req,res) =>{
 const saveOffer = async (req, res) => {
     const { type, typeId, percentage } = req.body;
     try {
-        console.log(type, typeId, percentage);
         
         if (percentage === undefined || percentage === null || percentage >= 100 || percentage <= 0) {
             return res.status(400).json({ message: 'Percentage must be between 0 and 100.' });
@@ -380,7 +370,6 @@ const saveOffer = async (req, res) => {
 const deleteOffer = async(req, res) => {
     try {
         const { type, typeId } = req.body;
-        console.log(type,typeId)
         if (type === 'product') {
             const product = await Product.findById(typeId);
             if (!product) {
@@ -389,7 +378,6 @@ const deleteOffer = async(req, res) => {
 
             product.offerPercentage = undefined;
             product.effectiveOffer = 0;
-            console.log('PRODUCT DETAILS :',product.variants)
             for (let variant of product.variants) {
                 variant.salePrice = variant.price;
             }

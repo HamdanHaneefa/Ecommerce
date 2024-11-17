@@ -102,7 +102,6 @@
         };
         axios.post('/cart/add', data)
             .then(response => {
-                console.log('Item added to cart:', response.data);
                 toastr.success('Item added to cart!');
                 removeFromWishlist(productId, variantId);
                 window.location.href = '/cart'
@@ -121,7 +120,6 @@
             }
         })
         .then(response => {
-            console.log('Item removed from wishlist:', response.data);
         })
         .catch(error => {
             console.error('Error removing item from wishlist:', error);

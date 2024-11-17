@@ -245,7 +245,6 @@
         $('#btn-update-status').on('click', function() {
             const orderId = '<%= order._id %>';
             const selectedStatus = $('#order-status').val();
-            console.log(selectedStatus);
 
             $.ajax({
                 url: '/admin/update-status', 

@@ -19,6 +19,6 @@ Cart.find({ userId: someUserId })
         });
 
         // Now you can return the carts with fully populated variants
-        console.log(carts);
+        
     })
     .catch(err => console.log(err));

@@ -34,7 +34,6 @@ router.get('/category',adminAuth,categoryController.categoryInfo)
 router.post('/addBrand',adminAuth,categoryController.addBrand)
 router.post('/changeStatus',adminAuth,categoryController.changeStatus)
 router.post('/editBrand',adminAuth,categoryController.editBrand)
-router.post('/deleteBrand',adminAuth,categoryController.deleteBrand)
 
 
 //PRODUCT

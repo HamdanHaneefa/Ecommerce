@@ -402,9 +402,7 @@ const generateReport = async (req, res) => {
             return res.status(400).json({ error: "Invalid report type" });
     }
 
-    console.log('StartDate :', startDate);
-    console.log('EndDate :', endDate);
-    console.log('Date Labels:', dateLabels);
+  
 
     try {
         const orders = await Order.find({
@@ -425,16 +423,13 @@ const generateReport = async (req, res) => {
             paymentMethod: order.paymentMethod,
             createdAt: order.createdAt
         }));
-        // console.log('Orders :', formattedOrders);
+   
           
         const pendingCountsArray = await getOrderCountsByStatus(startDate, endDate, 'Pending', reportType);
         const shippedCountsArray = await getOrderCountsByStatus(startDate, endDate, 'Shipped', reportType);
         const deliveredCountsArray = await getOrderCountsByStatus(startDate, endDate, 'Delivered', reportType);
 
-        console.log('pendingCountsArray :', pendingCountsArray);
-        console.log("shippedCountsArray :", shippedCountsArray);
-        console.log("deliveredCountsArray :", deliveredCountsArray);
-
+      
         res.json({
             orders: formattedOrders,
             dateLabels,

@@ -66,8 +66,6 @@ const updateProfile = async (req, res) => {
             }
 
             const filePath = path.join(uploadDir, file);
-            console.log("Saving file to:", filePath);
-
             fs.writeFileSync(filePath, req.file.buffer);
             user.profileImage = file;
         }
@@ -92,7 +90,6 @@ const deleteImage = async (req,res) =>{
          // Delete the image file from the server
          if (user.profileImage && fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
-            console.log("Deleted file:", filePath);
         }
         user.profileImage ='';
         await user.save();
@@ -179,7 +176,7 @@ const loadAddress = async (req,res) =>{
         if(req.session.user){
             const userId = req.session.user;
             const user = await User.findById(userId);
-            const address = await Address.findOne({ userId });
+            const address = await Address.findOne({ userId:userId });
             const err_msg = req.flash('err_msg');
             const toastrMsg = req.session.toastrMsg;
             req.session.toastrMsg = null
@@ -200,7 +197,7 @@ const loadAddAddress = async (req,res) =>{
             const userId = req.session.user;
             const user = await User.findById(userId);
             const err_msg = req.flash('err_msg');
-            res.render('Addaddress',{user:userId,url:req.originalUrl,err_msg})
+            res.render('Addaddress',{user,url:req.originalUrl,err_msg})
         }else{
             res.redirect('/')
         }
@@ -222,51 +219,48 @@ const addAddress = async (req, res) => {
         // Validate required fields
         if (!name || !street || !city || !state || !country) {
             req.flash("err_msg", "All fields are required.");
-            console.log("Error: All fields are required.");
             return res.redirect("/address/add-address");
         }
 
         // Validate name format
         if (!namePattern.test(name)) {
             req.flash("err_msg", "Name can only contain letters and spaces.");
-            console.log("Error: Invalid name format.");
             return res.redirect("/address/add-address");
         }
 
         // Validate phone number format
         if (!phonePattern.test(phone)) {
             req.flash("err_msg", "Phone number must be exactly 10 digits.");
-            console.log("Error: Invalid phone number format.");
             return res.redirect("/address/add-address");
         }
 
         // Validate zip code format
         if (!zipPattern.test(zip)) {
             req.flash("err_msg", "Zip code must be between 5 and 10 digits.");
-            console.log("Error: Invalid zip code format.");
             return res.redirect("/address/add-address");
         }
 
         let additionalAddress = [];
         if (zip) {
-            // Adjust the URL for Nominatim API
             const url = `https://nominatim.openstreetmap.org/search?postalcode=${zip}&countrycodes=IN&format=json`;
             try {
-                const response = await axios.get(url);
+                const response = await axios.get(url, {
+                    headers: {
+                        'User-Agent': 'YourAppName/1.0 (your-email@example.com)'
+                    }
+                });
                 const data = response.data;
-        
-                // Checking if API returned data
+                console.log('RETURN : ', data);
                 if (data && data.length > 0) {
                     const { display_name: placeName, lon: longitude, lat: latitude } = data[0];
-                    console.log(placeName, longitude, latitude);
                     additionalAddress.push({ placeName, longitude, latitude });
                 } else {
                     req.flash("err_msg", "No places found for this ZIP code.");
                     return res.redirect("/address/add-address");
                 }
             } catch (apiError) {
-                console.log("Error fetching data from Nominatim API:", apiError.message);
-                req.flash("err_msg", "Invalid ZIP code. Please try again.");
+                console.log("Error fetching data from Nominatim API:", apiError.response ? apiError.response.data : apiError.message);
+                req.flash("err_msg", "Invalid ZIP code or request blocked. Please try again.");
                 return res.redirect("/address/add-address");
             }
         }
@@ -286,7 +280,6 @@ const addAddress = async (req, res) => {
             longitude,
             latitude
         };
-        console.log(newAddress)
         let userAddress = await Address.findOne({ userId });
 
         if (!userAddress) {
@@ -299,16 +292,11 @@ const addAddress = async (req, res) => {
                 addr => addr.name === newAddress.name
             );
             
-            if (addressExists) {
-                req.flash("err_msg", "This address name already exists.");
-                return res.redirect("/address/add-address");
-            }
             userAddress.addresses.push(newAddress);
         }
 
         // Save the updated user address
         await userAddress.save();
-        console.log("Address saved succefully")
         req.flash("success_msg", "Address added successfully!");
         return res.redirect('/address');
 
@@ -361,25 +349,21 @@ const editAddress = async (req, res) => {
             
             // Validation for address fields
             if (!name || !zipcode || !city || !state || !country) {
-                console.log("Validation Error: All fields are required.");
                 req.session.toastrMsg = "All fields are required."; 
                 return res.redirect("/address");
             }
 
             if (!namePattern.test(name)) {
-                console.log("Validation Error: Name should not contain Numbers.");
                 req.session.toastrMsg = "Name should only contain letters and spaces."; 
                 return res.redirect('/address');
             }
 
             if (!phonePattern.test(phone)) {
-                console.log("Validation Error: Phone number must be exactly 10 digits.");
                 req.session.toastrMsg = "Phone number must be exactly 10 digits."; 
                 return res.redirect("/address");
             }
 
             if (!zipPattern.test(zipcode)) {
-                console.log("Validation Error: Zip code must be between 5 and 10 digits.");
                 req.session.toastrMsg = "Zip code must be between 5 and 10 digits."; 
                 return res.redirect("/address");
             }
@@ -443,9 +427,7 @@ const orders = async (req,res) =>{
 
             const order = await Order.findById(orderId)
             .populate({ path: 'orderedItems.product', model: 'Product' })
-            console.log("ORDER :",order)
             const addressDetail = order.address
-            console.log('ADDRESS DETAIL :',addressDetail)
             
             const orderDetails = order.orderedItems.map(item => {
                 const variant = item.product.variants.id(item.variantId); 
@@ -462,8 +444,6 @@ const orders = async (req,res) =>{
                     productId:item._id
                 };
             });
-
-            // console.log('ORDER DETAILS : ',orderDetails);
 
             res.render('order-details', {    
                 user, 
@@ -560,7 +540,6 @@ const returnOrder = async (req, res) => {
                 for (const item of order.orderedItems) {
                     const product = await Product.findById(item.product);
                     const variant = product.variants.id(item.variantId); 
-                    console.log( variant.stock , item.quantity)
 
                     if (variant && variant.stock < item.quantity || !variant.isActive ) {
                         order.status = 'Cancelled';
@@ -638,7 +617,6 @@ const loadCoupon = async (req,res) =>{
 const applyCoupon = async (req, res) => {
     try {
         const { couponCode } = req.body;
-        console.log('HEHEHE')
         if (!couponCode || typeof couponCode !== 'string' || couponCode.length < 3) {
             return res.status(400).json({ message: 'Invalid coupon code format.' });
         }
@@ -672,7 +650,6 @@ const applyCoupon = async (req, res) => {
         }
 
         const cartTotal = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
-        console.log('CartTotal :',cartTotal)
 
         if (!cart) {
             return res.status(400).json({ message: 'Cart not found.' });
@@ -707,17 +684,16 @@ const applyCoupon = async (req, res) => {
         const subtotal = cart.items.reduce((acc, item) => acc + item.totalPrice, 0);
         const discountAmount = Math.floor((subtotal * coupon.discount) / 100);
 
-        console.log('Discount amount :',discountAmount)
 
         if (coupon.userId.includes(userId)) {
             return res.status(400).json({ message: 'Coupon has already been redeemed by this user.'});
         } 
-
         // Save coupon data to session
         req.session.couponRedeemed = {
             status: true,
             coupon: couponCode,
-            discountAmount
+            discountAmount,
+            couponId: coupon._id
         };
 
         return res.status(200).json({ message: 'Coupon applied successfully!' });

@@ -9,25 +9,30 @@ const pageNotFound = async (req, res) => {
   }
 };
 
+
 const loadHomepage = async (req, res) => {
   try {
     const userData = req.session.user ? await User.findById(req.session.user) : null;
     const products = await Product.find({ isActive: true });
-    const errorMessage = req.session.errorMessage ? req.session.errorMessage : null ;
-
-    if(userData && userData.isBlocked === true){
-      req.session.errorMessage = 'User is blocked by admin'
-      return res.redirect('/login')
+    let errorMessage = req.session.blockUser || req.session.errorMessage || null;
+    req.session.errorMessage = null;
+    
+    // If user is blocked
+    if (userData && userData.isBlocked) {
+      req.session.blockUser = 'User is blocked by admin';
+      req.session.user = null;
+      errorMessage = req.session.blockUser;
+      req.session.blockUser = null;
+      return res.render('home', { user: null, products, errorMessage });
     }
 
-    req.session.errorMessage = null;
-    return res.render('home', { user: userData, products,errorMessage});
+    return res.render('home', { user: userData, products, errorMessage });
 
   } catch (error) {
-    console.error("Error loading homepage:", error);
     res.status(500).send("Server error");
   }
 };
+
 
 
 const loadSignup = async (req, res) => {

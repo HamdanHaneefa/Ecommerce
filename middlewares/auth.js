@@ -7,14 +7,11 @@ const userAuth = (req, res, next) => {
             .then(user => {
                 if (user) {
                     if (user.isBlocked) {
-                        console.log("User is blocked:");
                         return res.redirect("/login");
                     } else {
-                        console.log("User authenticated:", user);
                         return next(); 
                     }
                 } else {
-                    console.log("User not found");
                     return res.redirect('/signup'); 
                 }
             })

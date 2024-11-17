@@ -168,7 +168,6 @@
 
     $(document).ready(function() {
         var toastrMsg = "<%= toastrMsg ? toastrMsg : '' %>";
-        console.log(toastrMsg);
         if (toastrMsg) {
             toastr.error(toastrMsg, "Error");
         }

@@ -259,7 +259,6 @@
             addressId: selectedAddress,
             paymentMethod: paymentMethodValue,
         };
-        console.log('Order Data:', orderData);
 
         // PLACE ORDER
         $.ajax({
@@ -388,13 +387,12 @@
             $('#applyCoupon').on('click', function() {
                 var couponInput = $('#couponInput').val().trim(); 
                 if (couponInput) {
-                    console.log('Applied Coupon:', couponInput);
+
 
                     axios.post('/apply-coupon', { couponCode: couponInput })
                         .then(function(response) {
                             toastr.success('Coupon applied successfully!');
                             window.location.reload()
-                            console.log('Server response:', response.data);
                         })
                         .catch(function(error) {
                             console.error('Error applying coupon:', error);
@@ -452,7 +450,6 @@
         .then(function(response) {
             toastr.success('Coupon removed successfully');
             window.location.reload();
-            console.log('Server response:', response.data);
          })
          .catch(function(error) {
                 console.error('Error applying coupon:', error);
@@ -477,7 +474,6 @@
                 const finalAmount = response.data.total;
                 $('#deliveryCharge').text(`₹${deliveryCharge}`);
                 $('#finalAmount').text(`₹${finalAmount}`);
-                console.log(finalAmount)
             })
             .catch(function(error) {
                 console.error('Error fetching address details:', error);

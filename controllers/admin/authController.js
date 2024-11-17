@@ -34,13 +34,10 @@ const login = async (req,res) =>{
 const logout = async (req,res) =>{
     try {
         if (req.session && req.session.admin) {
-            req.session.admin = null;
-
-            console.log("Admin session cleared");
+            req.session.admin = null;    
         
             return res.redirect('/admin/login');
         } else { 
-            console.log("Session is null or undefined");
             return res.redirect('/admin/login');
         }
     } catch (error) {

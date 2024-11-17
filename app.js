@@ -10,13 +10,20 @@ const userRouter = require('./routes/userRouter');
 const adminRouter = require('./routes/adminRouter');
 const flash = require('connect-flash');
 const morgan = require('morgan')
+const nocache = require('nocache');
 db() 
   
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(flash());
+
+// Apply morgan middleware globally
 // app.use(morgan('dev')) 
+
+// Apply nocache middleware globally
+app.use(nocache());
+
 app.use(session({
    secret:process.env.SESSION_KEY,
    resave:false,

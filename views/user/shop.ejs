@@ -1,4 +1,6 @@
 <%- include("../../views/partials/user/header") %>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
 <style>
     .img-prod {
         position: relative; /* Positioning context for absolute children */
@@ -172,7 +174,7 @@
                                         </h4>
                                     </div>
                                     <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
-                                        <div class="panel-body">
+                                         <div class="panel-body">
                                             <ul class="brand-list">
                                                 <% brands.forEach(brand => { %>
                                                     <li><a href="/shop?brandSort=<%= brand._id %>"><%= brand.name %></a></li>                                               
@@ -233,13 +235,28 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                  
+                    </div>        
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+    const errorMessage = "<%= errorMessage %>";
+    toastr.options = {
+        positionClass: 'toast-top-right',
+        closeButton: true,
+        progressBar: true,
+        timeOut: "5000",
+        extendedTimeOut: "1000",
+        onclick: function () {
+            window.location.href = '/login';
+        }
+    }
+    errorMessage && toastr.error(errorMessage);
+
+</script>
 <%- include("../../views/partials/user/footer") %>

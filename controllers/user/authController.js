@@ -54,7 +54,7 @@ const signup = async (req, res) => {
     const namePattern = /^[a-zA-Z\s]+$/;
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phonePattern = /^[0-9]{10}$/;
-    const passPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passPattern = /^[A-Za-z\d]{6,}$/;
 
     // Input validation
     if (!name || !email || !phone || !password || !cpassword) {
@@ -91,7 +91,6 @@ const signup = async (req, res) => {
 
     // Generate OTP
     const otp = generateOtp();
-    console.log("Generated OTP:", otp);
 
     // Send OTP to user's email
     const emailSent = await sendVerificationEmail(email, otp);
@@ -117,7 +116,6 @@ const signup = async (req, res) => {
 const verifyOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-    console.log("Received OTP:", otp);
 
     if (otp === req.session.userOtp) {
       const user = req.session.userData;
@@ -152,7 +150,6 @@ const resendOtp = async (req, res) => {
 
     const otp = generateOtp();
     req.session.userOtp = otp;
-    console.log("Resent OTP:", otp);
 
     const emailSent = await sendVerificationEmail(email, otp);
     if (emailSent) {
@@ -171,7 +168,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
     const findUser = await User.findOne({ isAdmin: 0, email: email });
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const passPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passPattern = /^[A-Za-z\d]{6,}$/;
 
     if( req.session.errorMessage)
     if ( !email || !password ) {
@@ -218,7 +215,6 @@ const logout = async (req, res) => {
   try {
       if (req.session && req.session.user) {
           req.session.user = null;
-          console.log("User session cleared");
       }
       return res.redirect("/");
       
@@ -243,7 +239,6 @@ const forget = async (req,res) =>{
       }else{
       // Generate OTP
     const otp = generateOtp();
-    console.log("Generated OTP:", otp);
     // Send OTP to user's email
     const emailSent = await sendVerificationEmail(email, otp);
 
@@ -266,9 +261,7 @@ const forget = async (req,res) =>{
 const forgotVerify = async (req,res)=>{
   try {
     const {otp} = req.body
-    console.log("Recived Otp:",otp)
     if (otp === req.session.userOtp) {
-      console.log("OTP VERIFIED SUCCESFULL")
       res.json({ success: true, redirectUrl: "/change-password" });
     }else{
       return res.status(400).json({ success: false, message: "OTP is Incorrect" });
@@ -283,7 +276,7 @@ const forgotVerify = async (req,res)=>{
 const changePassword = async (req,res) =>{
   try {
     const { password, cpassword } = req.body;
-    const passPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    const passPattern = /^[A-Za-z\d]{6,}$/;
 
     // Check if fields are provided
     if (!password || !cpassword) {
@@ -299,7 +292,7 @@ const changePassword = async (req,res) =>{
 
     // Check password pattern
     if (!passPattern.test(password)) {
-      req.flash("error_msg", "Password must be at least 8 characters long, including one letter and one number.");
+      req.flash("error_msg", "Password must be at least 6 characters long and contain only letters and numbers.");
       return res.redirect("/change-password");
     }
 
@@ -309,7 +302,7 @@ const changePassword = async (req,res) =>{
     // Retrieve the user's email from session
     const email = req.session.userData?.email;
     if (!email) {
-      req.flash("error_msg", "User email not found in session");
+      req.flash("error_msg", "Unfortunately, we couldn't find your email in the session. Please log in again to continue.");
       return res.redirect("/change-password");
     }
 
